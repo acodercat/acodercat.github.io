@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="介绍定义 二叉堆是一颗二叉树，即每个节点只有一个父节点并且每个节点最多有两个子节点的树形结构。 二叉堆分为最大堆和最小堆，如果堆中的任意一个节点的值都大于等于它的子节点，称为最大堆。如果堆中的任意一个节点的值都小于等于它的子节点，称为最小堆。  下图这颗二叉树就是一个最大堆，树中每个节点都大于等于该节点的子节点：   完全二叉树二叉堆是一颗完全二叉树，即当一颗子树存在右节点的时候这颗子树一定存在左">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图解数据结构之二叉堆">
+<meta property="og:url" content="http://coder.cat/2020/09/10/binary-heap/index.html">
+<meta property="og:site_name" content="CoderCat&#39;s Blog">
+<meta property="og:description" content="介绍定义 二叉堆是一颗二叉树，即每个节点只有一个父节点并且每个节点最多有两个子节点的树形结构。 二叉堆分为最大堆和最小堆，如果堆中的任意一个节点的值都大于等于它的子节点，称为最大堆。如果堆中的任意一个节点的值都小于等于它的子节点，称为最小堆。  下图这颗二叉树就是一个最大堆，树中每个节点都大于等于该节点的子节点：   完全二叉树二叉堆是一颗完全二叉树，即当一颗子树存在右节点的时候这颗子树一定存在左">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://image.coder.cat/bh1.png">
+<meta property="og:image" content="https://image.coder.cat/bh1.png">
+<meta property="og:image" content="https://image.coder.cat/bh2.png">
+<meta property="og:image" content="https://image.coder.cat/bh11.png">
+<meta property="og:image" content="https://image.coder.cat/bh3.png">
+<meta property="og:image" content="https://image.coder.cat/bh4.png">
+<meta property="og:image" content="https://image.coder.cat/bh5.png">
+<meta property="og:image" content="https://image.coder.cat/bh6.png">
+<meta property="og:image" content="https://image.coder.cat/bh7.png">
+<meta property="og:image" content="https://image.coder.cat/bh8.png">
+<meta property="og:image" content="https://image.coder.cat/bh9.png">
+<meta property="og:image" content="https://image.coder.cat/bh10.png">
+<meta property="article:published_time" content="2020-09-10T03:17:52.000Z">
+<meta property="article:modified_time" content="2020-12-29T08:22:46.219Z">
+<meta property="article:author" content="CoderCat">
+<meta property="article:tag" content="Computer science">
+<meta property="article:tag" content="Algorithm">
+<meta property="article:tag" content="Data structure">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.coder.cat/bh1.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>图解数据结构之二叉堆</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+      
+<link rel="stylesheet" href="/css/rtl.css">
+
+    
+    <!-- rss -->
+    
+    
+      <link rel="alternate" href="/true" title="CoderCat&#39;s Blog" type="application/atom+xml" />
+    
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2020/09/19/representation-of-integers-in-computers/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" href="/2020/08/19/function-stack-frame/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2020/09/10/binary-heap/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/09/10/binary-heap/&text=图解数据结构之二叉堆"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/09/10/binary-heap/&title=图解数据结构之二叉堆"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/09/10/binary-heap/&is_video=false&description=图解数据结构之二叉堆"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=图解数据结构之二叉堆&body=Check out this article: http://coder.cat/2020/09/10/binary-heap/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/09/10/binary-heap/&title=图解数据结构之二叉堆"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/09/10/binary-heap/&title=图解数据结构之二叉堆"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/09/10/binary-heap/&title=图解数据结构之二叉堆"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/09/10/binary-heap/&title=图解数据结构之二叉堆"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/09/10/binary-heap/&name=图解数据结构之二叉堆&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/09/10/binary-heap/&t=图解数据结构之二叉堆"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89"><span class="toc-number">1.1.</span> <span class="toc-text">定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E5%85%A8%E4%BA%8C%E5%8F%89%E6%A0%91"><span class="toc-number">1.2.</span> <span class="toc-text">完全二叉树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-number">1.3.</span> <span class="toc-text">基本操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%94%E7%94%A8"><span class="toc-number">1.4.</span> <span class="toc-text">应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.</span> <span class="toc-text">具体实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%98%E5%82%A8"><span class="toc-number">2.1.</span> <span class="toc-text">存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E8%8A%82%E7%82%B9"><span class="toc-number">2.2.</span> <span class="toc-text">插入节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E8%8A%82%E7%82%B9"><span class="toc-number">2.3.</span> <span class="toc-text">删除节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E4%BA%8C%E5%8F%89%E5%A0%86"><span class="toc-number">2.4.</span> <span class="toc-text">构造二叉堆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%BC%E5%AE%B9%E6%9C%80%E5%B0%8F%E5%A0%86%E5%92%8C%E6%9C%80%E5%A4%A7%E5%A0%86"><span class="toc-number">2.5.</span> <span class="toc-text">兼容最小堆和最大堆</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%B4%E6%98%8E"><span class="toc-number">3.</span> <span class="toc-text">说明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BA%90%E4%BB%A3%E7%A0%81"><span class="toc-number">3.1.</span> <span class="toc-text">源代码</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        图解数据结构之二叉堆
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">CoderCat</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-09-10T03:17:52.000Z" itemprop="datePublished">2020-09-10</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/Algorithm-and-data-structure/">Algorithm and data structure</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Algorithm/" rel="tag">Algorithm</a>, <a class="tag-link-link" href="/tags/Computer-science/" rel="tag">Computer science</a>, <a class="tag-link-link" href="/tags/Data-structure/" rel="tag">Data structure</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><blockquote>
+<p>二叉堆是一颗二叉树，即<code>每个节点只有一个父节点</code>并且<code>每个节点最多有两个子节点</code>的树形结构。 二叉堆分为最大堆和最小堆，如果堆中的任意一个节点的值都<code>大于等于</code>它的子节点，称为最大堆。如果堆中的任意一个节点的值都<code>小于等于</code>它的子节点，称为最小堆。</p>
+</blockquote>
+<p>下图这颗二叉树就是一个最大堆，树中每个节点都<code>大于等于</code>该节点的子节点：</p>
+<img src="https://image.coder.cat/bh1.png" style="zoom:90%;" />
+
+<h3 id="完全二叉树"><a href="#完全二叉树" class="headerlink" title="完全二叉树"></a>完全二叉树</h3><p>二叉堆是一颗完全二叉树，即当一颗子树存在右节点的时候这颗子树一定存在左节点。我们会看到这颗二叉树的节点都是从左往右连续排列的。对于完全二叉树更加严谨的定义为：</p>
+<blockquote>
+<p>若设二叉树的深度为h，除第 h 层外，其它各层 (1～h-1) 的结点数都达到最大个数，第h层所有的结点都连续集中在最左边。  </p>
+</blockquote>
+<p>下图是一颗完全二叉树，树中的节点都是<code>从上到下从左至右</code>一个节点一个节点依次存放：</p>
+<img src="https://image.coder.cat/bh1.png" style="zoom:90%;" />
+
+
+
+<h3 id="基本操作"><a href="#基本操作" class="headerlink" title="基本操作"></a>基本操作</h3><ul>
+<li>插入节点：向二叉堆中插入一个节点。</li>
+<li>取出最大（最小）节点：取出二叉堆的根节点。</li>
+</ul>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><ul>
+<li>优先队列</li>
+<li>堆排序</li>
+<li>解决<code>top K</code>问题</li>
+</ul>
+<h2 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h2><blockquote>
+<p>下面的具体实现都是<code>以最大堆为例</code>，即二叉堆的根节点大于等于它的所有子节点。最小堆的操作跟最大堆是一样的，只是节点间的比较关系不同而已。  </p>
+</blockquote>
+<h3 id="存储"><a href="#存储" class="headerlink" title="存储"></a>存储</h3><blockquote>
+<p>由于二叉堆是一颗完全二叉树我们可以使用一个数组来存储，数组的每个元素就是二叉堆中的各个节点。这是因为完全二叉树的节点从左至右是连续的。如果不是完全二叉树，节点在数组中的索引就会离散不连续便会浪费内存空间。当要存储有<code>N</code>个节点的二叉堆时，一般会用长度为<code>N+1</code>的数组来存储这颗二叉堆。数组索引为<code>1</code>元素就是二叉堆的根节点。索引<code>0</code>的位置就空着不用，这是为了方便计算每颗子树的子节点和父节点的索引。</p>
+</blockquote>
+<p>如果树的某个节点在数组中的索引是k那么：</p>
+<ul>
+<li>该节点的父亲节点索引：k / 2 (向下取整)</li>
+<li>该节点的左子节点索引：2 * k</li>
+<li>该节点的右子节点索引： 2 * k + 1</li>
+</ul>
+<p>下图树中每个节点上的数字表示节点在数组中的索引，节点里的数字表示节点所对应的元素值。</p>
+<img src="https://image.coder.cat/bh2.png" style="zoom:90%;" />
+
+<p>这棵树在数组中<code>存储结构</code>为：</p>
+<p><img src="https://image.coder.cat/bh11.png"></p>
+<p>其中索引为<code>3</code>的节点它的父节点和子节点的索引为：</p>
+<ul>
+<li>父节点索引：<code>3 / 2 = 1</code>（向下取整）</li>
+<li>左子节点索引：<code>2 * 3  =  6</code></li>
+<li>右子节点索引：<code>2 * 3 + 1 =  7</code></li>
+</ul>
+<p><strong>二叉堆初始化代码实现：</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BinaryHeap</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">// 存放二叉堆的数组</span></span><br><span class="line">    <span class="keyword">int</span> *container = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="comment">// 容量，也就是最多能存放多少个节点</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> capacity = <span class="number">0</span>;</span><br><span class="line">     <span class="comment">// 二叉堆的大小</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> size = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    BinaryHeap(<span class="keyword">unsigned</span> capacity) &#123;</span><br><span class="line">        assert(capacity &gt; <span class="number">0</span>);</span><br><span class="line">        <span class="comment">// 初始化存放二叉堆的数组</span></span><br><span class="line">        <span class="keyword">this</span>-&gt;container = <span class="keyword">new</span> <span class="keyword">int</span>[capacity];</span><br><span class="line">        <span class="keyword">this</span>-&gt;capacity = capacity;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><strong>索引计算代码实现</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 左子节点索引</span></span><br><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="title">calculateLeftChildIndex</span><span class="params">(<span class="keyword">unsigned</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> index * <span class="number">2</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 右子节点索引</span></span><br><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="title">calculateRightChildIndex</span><span class="params">(<span class="keyword">unsigned</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>-&gt;calculateLeftChildIndex(index) + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 父节点索引</span></span><br><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="title">calculateParentIndex</span><span class="params">(<span class="keyword">unsigned</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> index / <span class="number">2</span>; <span class="comment">// C++除法如果两边都是整型的话默认向下取整</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="插入节点"><a href="#插入节点" class="headerlink" title="插入节点"></a>插入节点</h3><blockquote>
+<p>插入节点就是往堆中新增一个节点，同时不能破坏二叉堆的对应。</p>
+</blockquote>
+<p>插入节点时，先把要插入的节点添加到二叉堆的<code>堆尾</code>（等价于在数组末尾新加一个元素）。此时二叉树中新插入的这个节点可能比它的父节点还要大，现在的这颗二叉树就不再满足最大堆的定义。需要把该节点与它的父节点交换位置。交换后新的父节点还是有可能比这个新的父节点的父节点还要大，那么就再重复一次之前的操作，这样一层一层向上移动直到堆顶或者遇到的节点不再比它的父节点大为止。整个交换节点的操作叫做<code>shiftUp</code>，当该操作完成之后这颗二叉树又重新满足最大堆的定义。</p>
+<p>往下图左边的二叉堆的<code>堆尾</code>插入节点<code>10</code>，得到右边树的样子。发现新加入的节点<code>10</code>比它的父节点<code>6</code>还要大，此时右边树就违背了二叉堆的定义，不再是一个二叉堆。所以我们需要对新加入节点的位置（也就是节点<code>10</code>所在的位置）做<code>shifUp</code>操作：</p>
+<p><img src="https://image.coder.cat/bh3.png"></p>
+<p>下图左边的树中<code>节点10</code>比它的<code>父节点6</code>要大，所以它们需要交换位置，得到右边树：</p>
+<p><img src="https://image.coder.cat/bh4.png"></p>
+<p>下图左边的树中<code>节点10</code>仍旧比它的<code>父节点9</code>要大，所以它们再次交换位置，得到右边树：</p>
+<p><img src="https://image.coder.cat/bh5.png"></p>
+<p><code>节点10</code>最终被移到了根节点，观察树中的任意一个节点都大于它的子节点，这样一来整个二叉树又重新满足了二叉堆的定义。整个修复二叉树的过程就是<code>shiftUp</code>操作。</p>
+<p><img src="https://image.coder.cat/bh6.png"></p>
+<p><strong>插入节点实现代码</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">insert</span><span class="params">(E element)</span> </span>&#123;</span><br><span class="line">    assert(!<span class="keyword">this</span>-&gt;isFull());</span><br><span class="line">    <span class="keyword">this</span>-&gt;container[<span class="keyword">this</span>-&gt;size] = element;</span><br><span class="line">    <span class="keyword">this</span>-&gt;shiftUp(<span class="keyword">this</span>-&gt;size);</span><br><span class="line">    <span class="keyword">this</span>-&gt;size ++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p><strong>shiftUp实现代码</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">shiftUp</span><span class="params">(<span class="keyword">unsigned</span> currentIndex)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> parentIndexOfCurrentIndex = <span class="keyword">this</span>-&gt;calculateParentIndex(currentIndex);</span><br><span class="line">    <span class="keyword">while</span> ((index &gt; <span class="number">1</span>) &amp;&amp; <span class="keyword">this</span>-&gt;compare(<span class="keyword">this</span>-&gt;container[index], <span class="keyword">this</span>-&gt;container[parentIndexOfCurrentIndex])) &#123;</span><br><span class="line">        swap(<span class="keyword">this</span>-&gt;container[index], <span class="keyword">this</span>-&gt;container[parentIndexOfCurrentIndex]);</span><br><span class="line">        currentIndex = parentIndexOfCurrentIndex;</span><br><span class="line">        parentIndexOfCurrentIndex = <span class="keyword">this</span>-&gt;calculateParentIndex(currentIndex);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>while</code>中的<code>index &gt; 1</code>表示该索引不是堆顶索引，<code>this-&gt;container[index] &gt;= this-&gt;container[parentIndexOfCurrentIndex / 2]</code>表示该节点大于它的父亲节点。只要同时满足这两个条件就交换位置，同时把索引设成原来节点的父节点，一样一层一层向上移动，直到不满足这两个条件中的任意一个就退出。</p>
+<h3 id="删除节点"><a href="#删除节点" class="headerlink" title="删除节点"></a>删除节点</h3><blockquote>
+<p>从二叉堆中删除接点时，每次只能删除堆顶位置的节点。对于最大堆就意味着每次删除堆中最大的那个节点。如果用堆来实现优先队列，那么从堆中删除一个节点，可以理解为从堆中取出优先级最高的节点。</p>
+</blockquote>
+<p>把<code>堆顶</code>的节点删除之后，再把<code>堆尾</code>的节点移到<code>堆顶</code>的位置。产生的新的二叉树中<code>堆顶</code>的节点可能比它的子节点小，此时这颗二叉树就不再满足二叉堆的定义。需要把新的<code>堆顶</code>的节点与它子节点中最大的那个节点交换位置。交换后<code>新的子节点</code>还是有可能比这个<code>新的子节点</code>的子节点要小，那么就再重复一次之前的操作。这样一层一层向下移动直到遇到的节点不再比它的子节点小为止或者到了堆的底部。整个交换节点的操作叫做<code>shiftDown</code>，当该操作完成之后这颗二叉树又重新满足最大堆的定义。</p>
+<p>当从左边树中删除接点时，先找到<code>堆顶</code>位置的<code>节点10</code>，然后把它删除之后得到右边树：</p>
+<p><img src="https://image.coder.cat/bh7.png"></p>
+<p>接下来把左边树中<code>堆尾</code>位置的<code>节点6</code>移到<code>堆顶</code>的位置，得到右边树：</p>
+<p><img src="https://image.coder.cat/bh8.png"></p>
+<p>此时左边树中<code>堆顶</code>位置的<code>节点6</code>比它的<code>两个子节点</code>还要小，就让该节点与它子节点中最大的那个节点交换位置。它的两个子节点分别是<code>8</code>和<code>9</code>，最大的子节点是<code>9</code>，所以<code>节点6</code>与<code>节点9</code>交换位置，交换之后得到右边树：</p>
+<p><img src="https://image.coder.cat/bh9.png"></p>
+<p>完成上面的操作之后，<code>节点6</code>的子节点中没有比它大的节点，所以终止操作，最终得到下图中的树。它又重新满足了二叉堆的定义。</p>
+<p><img src="https://image.coder.cat/bh10.png"></p>
+<p><strong>具体代码</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">shiftDown</span><span class="params">(<span class="keyword">unsigned</span> currentIndex = <span class="number">0</span>)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> leftChildIndexOfCurrent = <span class="keyword">this</span>-&gt;calculateLeftChildIndex(currentIndex);</span><br><span class="line">    <span class="comment">// 判断当前节点的左子节点的索引是否超过了数组的大小,如果超过了,就代表该节点没有左子节点.</span></span><br><span class="line">    <span class="keyword">while</span>(<span class="keyword">this</span>-&gt;getSize() &gt;= leftChildIndexOfCurrent) &#123; <span class="comment">// 如果该节点存在左子节点</span></span><br><span class="line">        <span class="keyword">unsigned</span> maxChildIndexOfCurrent;</span><br><span class="line">        <span class="keyword">unsigned</span> rightChildIndexOfCurrent = calculateRightChildIndex(currentIndex);</span><br><span class="line">        <span class="keyword">if</span> ((<span class="keyword">this</span>-&gt;getSize() &gt;= rightChildIndexOfCurrent) &amp;&amp; (<span class="keyword">this</span>-&gt;container[rightChildIndexOfCurrent] &gt; <span class="keyword">this</span>-&gt;container[leftChildIndexOfCurrent])) &#123; <span class="comment">// 如果该节点存在右子节点并且右子节点比左子节点大</span></span><br><span class="line">            maxChildIndexOfCurrent = rightChildIndexOfCurrent;  <span class="comment">// 把最大的子节点设为右子节点.</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            maxChildIndexOfCurrent = leftChildIndexOfCurrent; <span class="comment">// 否则就把最大的子节点设为左子节点.</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> ((<span class="keyword">this</span>-&gt;container[currentIndex] &gt;= <span class="keyword">this</span>-&gt;container[maxChildIndexOfCurrent])) &#123; <span class="comment">// 如果当前节点大于等于它最大的子节点,那么就没有打破最大堆的定义,所以直接break掉就好了.</span></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 如果当前节点存在一个子节点比它还要大,那么就交换这2个节点的位置</span></span><br><span class="line">        swap(<span class="keyword">this</span>-&gt;container[currentIndex], <span class="keyword">this</span>-&gt;container[maxChildIndexOfCurrent]);</span><br><span class="line">        <span class="comment">// 把当前循环的索引设为新的根节点的索引然后继续向下检查.</span></span><br><span class="line">        currentIndex = maxChildIndexOfCurrent;</span><br><span class="line">        leftChildIndexOfCurrent = <span class="keyword">this</span>-&gt;calculateLeftChildIndex(currentIndex);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该代码实现思路就是先判断<code>当前节点</code>是否存在<code>左子节点</code>。然后判断<code>当前节点</code>是否存在<code>右子节点</code>。如果存在的就找出这两个子节点中<code>最大的子节点</code>。然后再判断<code>当前节点</code>是否<code>大于等于它子节点中的最大的子节</code>点如果成立就退出，因为并没有违背最大堆的定义。不成立的话就说明<code>当前节点存在一个子节点比它还要大</code>，那么就将当前节点和它最大的那个子节点交换位置，同时把当前循环的索引设为新的根节点的索引然后继续向下检查。</p>
+<h3 id="构造二叉堆"><a href="#构造二叉堆" class="headerlink" title="构造二叉堆"></a>构造二叉堆</h3><blockquote>
+<p>把<code>N</code>个元素构造成一个二叉堆。</p>
+</blockquote>
+<p>把<code>N</code>个元素构造成一个二叉堆一般有两个办法：</p>
+<ul>
+<li>第一个办法是通过二叉堆的<code>插入节点</code>操作依次把每个元素插入至堆中。</li>
+<li>第二个常用的办法是把这<code>N</code>个元素存入一个数组，此时可以把这个数组想象成一个<code>完全二叉树</code>，但是它还不是一个二叉堆。然后对这个数组的最后一个元素开始依次往回做<code>shiftDown</code>操作，这一步的目的是为了保证二叉堆中每颗子树都满足二叉堆的定义。但是我们发现如果某个节点是一个<code>叶子节点</code>的话那么它根本不需要做任何操作，因为它没有子节点，即使对这个节点做了<code>shiftDown</code>操作也等于没做。所以后来优化之后我们可以从<code>最后一个拥有子节点的节点</code>开始往回做<code>shiftDown</code>。最后一个拥有子节点的节点也被称为<code>非叶子节点</code>，它的索引就是<code>堆尾节点的父节点</code>的索引。这个方法被称为<code>heapify</code>。</li>
+</ul>
+<p><strong>heapify实现</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">heapify(<span class="keyword">int</span> *arr, <span class="keyword">unsigned</span> size) &#123;</span><br><span class="line">    <span class="comment">// size 就是堆尾的位置，它的父节点就是最后一个拥有子节点的节点</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="keyword">this</span>-&gt;calculateParentIndex(size); i &gt;= <span class="number">1</span>; i --) &#123;</span><br><span class="line">        <span class="keyword">this</span>-&gt;shiftDown(i);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="兼容最小堆和最大堆"><a href="#兼容最小堆和最大堆" class="headerlink" title="兼容最小堆和最大堆"></a>兼容最小堆和最大堆</h3><p>有时候我们需要使用最小堆，但有时候我们又需要使用最大堆，但是它们两个往往代码几乎一模一样只是比较符号的方向不同，为了复用代码，我们只需要给二叉堆设定一个比较方法即可，比如在初始化最大堆的时候给它传入一个方法，这个方法就用来做比较操作。 当二叉堆中需要做比较的时候调用该方法就好了。</p>
+<p>如果是一个最小堆,我们的比较方法如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">compare</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a &lt; b;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>例如堆中相应地方调用的时候：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">this</span>-&gt;compare(<span class="keyword">this</span>-&gt;container[calculateRightChildIndex(index)], <span class="keyword">this</span>-&gt;container[calculateLeftChildIndex(index)])) &#123;</span><br><span class="line"><span class="comment">// ........</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>本文对堆的定义和常用操作做了阐述，文中的代码使用了C++，数据结构与算法的重点在于思想和逻辑所以大家完全可以在了解了算法思想之后用自己熟悉的任意一门语言来实现。后面还会出一篇关于二叉堆应用和复杂度分析的文章。</p>
+<h3 id="源代码"><a href="#源代码" class="headerlink" title="源代码"></a>源代码</h3><p>具体实现：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/acodercat/cpp-algorithms/blob/master/include/binary_heap.h">https://github.com/acodercat/cpp-algorithms/blob/master/include/binary_heap.h</a></p>
+<p>调用样例：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/acodercat/cpp-algorithms/blob/master/src/examples/binary_heap.cpp">https://github.com/acodercat/cpp-algorithms/blob/master/src/examples/binary_heap.cpp</a></p>
+<p>仓库代码中的二叉堆是从索引0开始的，所以在父节点索引计算上会有不同。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89"><span class="toc-number">1.1.</span> <span class="toc-text">定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E5%85%A8%E4%BA%8C%E5%8F%89%E6%A0%91"><span class="toc-number">1.2.</span> <span class="toc-text">完全二叉树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-number">1.3.</span> <span class="toc-text">基本操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%94%E7%94%A8"><span class="toc-number">1.4.</span> <span class="toc-text">应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.</span> <span class="toc-text">具体实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%98%E5%82%A8"><span class="toc-number">2.1.</span> <span class="toc-text">存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E8%8A%82%E7%82%B9"><span class="toc-number">2.2.</span> <span class="toc-text">插入节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E8%8A%82%E7%82%B9"><span class="toc-number">2.3.</span> <span class="toc-text">删除节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E4%BA%8C%E5%8F%89%E5%A0%86"><span class="toc-number">2.4.</span> <span class="toc-text">构造二叉堆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%BC%E5%AE%B9%E6%9C%80%E5%B0%8F%E5%A0%86%E5%92%8C%E6%9C%80%E5%A4%A7%E5%A0%86"><span class="toc-number">2.5.</span> <span class="toc-text">兼容最小堆和最大堆</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%B4%E6%98%8E"><span class="toc-number">3.</span> <span class="toc-text">说明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BA%90%E4%BB%A3%E7%A0%81"><span class="toc-number">3.1.</span> <span class="toc-text">源代码</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2020/09/10/binary-heap/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/09/10/binary-heap/&text=图解数据结构之二叉堆"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/09/10/binary-heap/&title=图解数据结构之二叉堆"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/09/10/binary-heap/&is_video=false&description=图解数据结构之二叉堆"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=图解数据结构之二叉堆&body=Check out this article: http://coder.cat/2020/09/10/binary-heap/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/09/10/binary-heap/&title=图解数据结构之二叉堆"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/09/10/binary-heap/&title=图解数据结构之二叉堆"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/09/10/binary-heap/&title=图解数据结构之二叉堆"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/09/10/binary-heap/&title=图解数据结构之二叉堆"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/09/10/binary-heap/&name=图解数据结构之二叉堆&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/09/10/binary-heap/&t=图解数据结构之二叉堆"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2018-2020
+    CoderCat
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+
+    <!-- jquery -->
+
+<script src="/lib/jquery/jquery.min.js"></script>
+
+
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+
+<!-- clipboard -->
+
+  
+<script src="/lib/clipboard/clipboard.min.js"></script>
+
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>

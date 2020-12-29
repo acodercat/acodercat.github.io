@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="内存的最小单位是字节，一个字节等于8位（bit），每一位要么是0要么是1，也就是用二进制来表示。 一个字节在内存中的表示为：  无符号整数的表示无符号二进制转成十进制公式：   w：二进制位的长度。 i：二进制位从右往左开始的下标，从0开始计数。 w-1：由于i是从0开始计数，所以最后一个下标就是w-1。 x(i)：第i位的值，要么是0要么是1。 2^i：2的第i次幂。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="简单数据类型在内存中的表示">
+<meta property="og:url" content="http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/index.html">
+<meta property="og:site_name" content="CoderCat&#39;s Blog">
+<meta property="og:description" content="内存的最小单位是字节，一个字节等于8位（bit），每一位要么是0要么是1，也就是用二进制来表示。 一个字节在内存中的表示为：  无符号整数的表示无符号二进制转成十进制公式：   w：二进制位的长度。 i：二进制位从右往左开始的下标，从0开始计数。 w-1：由于i是从0开始计数，所以最后一个下标就是w-1。 x(i)：第i位的值，要么是0要么是1。 2^i：2的第i次幂。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://image.coder.cat/bit.png">
+<meta property="og:image" content="https://image.coder.cat/dd2fc7ee8cc062f42a633e67c9cd7fe6.png">
+<meta property="og:image" content="https://image.coder.cat/ce0c541a239b16c32885adb9f36cc850.png">
+<meta property="og:image" content="https://image.coder.cat/bit%202.png">
+<meta property="og:image" content="https://image.coder.cat/bit%203.png">
+<meta property="og:image" content="https://image.coder.cat/dd2fc7ee8cc062f42a633e67c9cd7fe6.png">
+<meta property="og:image" content="https://image.coder.cat/8c7bdb11f670c587afe6a694ed948c90.png">
+<meta property="og:image" content="https://image.coder.cat/cb4484727e77374e1bec9da86a091c4e.png">
+<meta property="og:image" content="https://image.coder.cat/7174f02edf01c94699f4b0a1a5f0dede.png">
+<meta property="og:image" content="https://image.coder.cat/c49854e22c96541aad7f80c6d0644331.png">
+<meta property="article:published_time" content="2019-08-22T02:23:26.000Z">
+<meta property="article:modified_time" content="2020-12-29T08:26:26.370Z">
+<meta property="article:author" content="CoderCat">
+<meta property="article:tag" content="Computer science">
+<meta property="article:tag" content="C">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.coder.cat/bit.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>简单数据类型在内存中的表示</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+      
+<link rel="stylesheet" href="/css/rtl.css">
+
+    
+    <!-- rss -->
+    
+    
+      <link rel="alternate" href="/true" title="CoderCat&#39;s Blog" type="application/atom+xml" />
+    
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2019/08/30/union-find/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&text=简单数据类型在内存中的表示"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&title=简单数据类型在内存中的表示"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&is_video=false&description=简单数据类型在内存中的表示"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=简单数据类型在内存中的表示&body=Check out this article: http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&title=简单数据类型在内存中的表示"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&title=简单数据类型在内存中的表示"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&title=简单数据类型在内存中的表示"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&title=简单数据类型在内存中的表示"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&name=简单数据类型在内存中的表示&description=&lt;p&gt;内存的最小单位是字节，一个字节等于8位（bit），每一位要么是0要么是1，也就是用二进制来表示。&lt;/p&gt;
+&lt;p&gt;一个字节在内存中的表示为：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://image.coder.cat/bit.png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;无符号整数的表示&#34;&gt;&lt;a href=&#34;#无符号整数的表示&#34; class=&#34;headerlink&#34; title=&#34;无符号整数的表示&#34;&gt;&lt;/a&gt;无符号整数的表示&lt;/h2&gt;&lt;p&gt;无符号二进制转成十进制公式：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://image.coder.cat/dd2fc7ee8cc062f42a633e67c9cd7fe6.png&#34;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;w&lt;/code&gt;：二进制位的长度。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;i&lt;/code&gt;：二进制位从右往左开始的下标，从0开始计数。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;w-1&lt;/code&gt;：由于i是从0开始计数，所以最后一个下标就是w-1。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;x(i)&lt;/code&gt;：第&lt;code&gt;i&lt;/code&gt;位的值，要么是0要么是1。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;2^i&lt;/code&gt;：2的第&lt;code&gt;i&lt;/code&gt;次幂。"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&t=简单数据类型在内存中的表示"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A0%E7%AC%A6%E5%8F%B7%E6%95%B4%E6%95%B0%E7%9A%84%E8%A1%A8%E7%A4%BA"><span class="toc-number">1.</span> <span class="toc-text">无符号整数的表示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Char%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E8%A1%A8%E7%A4%BA"><span class="toc-number">2.</span> <span class="toc-text">Char在内存中的表示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Short%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E8%A1%A8%E7%A4%BA"><span class="toc-number">3.</span> <span class="toc-text">Short在内存中的表示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E5%8A%A0%E5%87%8F%E6%B3%95"><span class="toc-number">4.</span> <span class="toc-text">实现加减法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%8D%E6%A8%A1%E5%BC%8F%E6%8B%B7%E8%B4%9D"><span class="toc-number">5.</span> <span class="toc-text">位模式拷贝</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%AE%E7%82%B9%E6%95%B0%E7%9A%84%E8%A1%A8%E7%A4%BA"><span class="toc-number">6.</span> <span class="toc-text">浮点数的表示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%AE%E7%82%B9%E6%95%B0%E4%B8%8E%E6%95%B4%E6%95%B0%E7%9B%B8%E4%BA%92%E8%B5%8B%E5%80%BC"><span class="toc-number">7.</span> <span class="toc-text">浮点数与整数相互赋值</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        简单数据类型在内存中的表示
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">CoderCat</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-08-22T02:23:26.000Z" itemprop="datePublished">2019-08-22</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/C/" rel="tag">C</a>, <a class="tag-link-link" href="/tags/Computer-science/" rel="tag">Computer science</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>内存的最小单位是字节，一个字节等于8位（bit），每一位要么是0要么是1，也就是用二进制来表示。</p>
+<p>一个字节在内存中的表示为：</p>
+<p><img src="https://image.coder.cat/bit.png"></p>
+<h2 id="无符号整数的表示"><a href="#无符号整数的表示" class="headerlink" title="无符号整数的表示"></a>无符号整数的表示</h2><p>无符号二进制转成十进制公式：</p>
+<p><img src="https://image.coder.cat/dd2fc7ee8cc062f42a633e67c9cd7fe6.png"></p>
+<ul>
+<li><code>w</code>：二进制位的长度。</li>
+<li><code>i</code>：二进制位从右往左开始的下标，从0开始计数。</li>
+<li><code>w-1</code>：由于i是从0开始计数，所以最后一个下标就是w-1。</li>
+<li><code>x(i)</code>：第<code>i</code>位的值，要么是0要么是1。</li>
+<li><code>2^i</code>：2的第<code>i</code>次幂。<a id="more"></a>
+例如：<br>无符号二进制数<code>10010</code> 按照公式展开就是：</li>
+</ul>
+<p><img src="https://image.coder.cat/ce0c541a239b16c32885adb9f36cc850.png"></p>
+<p>如果把这个数用1个字节在计算机中存储，内存中就表示为：</p>
+<p><img src="https://image.coder.cat/bit%202.png"></p>
+<p>不足8位，左边补0。</p>
+<p>1个字节的无符号正式能表示<code>2^8 = 256</code>个不同的数。能表示最大的数是8个二进位全是1的数等于255，也就是求一个<code>公比为2</code>，<code>首项是1</code>的<code>等比数列</code>前8项和。二进制位求和公式为<code>(2^n) - 1</code>。总结下来一个n位的二进制数能表示最大的数是<code>(2^n) - 1</code>，能够表示<code>2^n</code>个不同的数，之所以是2^n个不同的数，是因为可以表示<code>0~(2^n) - 1</code>，从0开始的所以还需要<code>+1</code>个长度。</p>
+<h2 id="Char在内存中的表示"><a href="#Char在内存中的表示" class="headerlink" title="Char在内存中的表示"></a>Char在内存中的表示</h2><blockquote>
+<p>Char类型是用来存储单个字符，在内存中占用1个字节的大小，它使用8个bit来表示256个字符。<br>Char类型实际存储的是字符的<code>ASCII</code>码，由于<code>ASCII</code>码是整数。所以Char最终在内存中是一个8bit的整型。</p>
+</blockquote>
+<p>比如字符<code>A</code>的<code>ASCII</code>码是65，65 = 2^0 + 2^6，所以在内存中的表示为：<br><img src="https://image.coder.cat/bit%203.png"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> ch = <span class="string">&#x27;A&#x27;</span>;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>, ch); <span class="comment">// output is 65</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Short在内存中的表示"><a href="#Short在内存中的表示" class="headerlink" title="Short在内存中的表示"></a>Short在内存中的表示</h2><blockquote>
+<p>Short 表示的是短整型，一般占用2个字节的内存大小。</p>
+</blockquote>
+<p>它的取值范围是<code>(-2)^15~(2^15)-1</code>包含0。最大值这里是<code>(2^15)-1</code>，是因为short有符号位，需要用最高位（用从左到右第一位）来表示符号，0表示正数，1表示负数。 最大值的二进制表示为<code>0111111111111111</code>(16个二进制位)，十进制就是<code>(2^15)-1</code>。 之所以是<code>(2^15)-1</code>，也是之前说的求和公式(<code>(2^n)-1</code>。</p>
+<h2 id="实现加减法"><a href="#实现加减法" class="headerlink" title="实现加减法"></a>实现加减法</h2><blockquote>
+<p>二进制加减法和十进制一样，把对应<code>位</code>相加，大于1就向前进位。例如<code>0111 + 1 = 1000</code></p>
+</blockquote>
+<p>如果想要把7和-7相加使结果等于0。按照在计算机中使用二进制的最高位来当做符号位的，0表示正数，1表示负数。那么7表示为<code>0000111</code>，-7就表示为<code>1000111</code> 。0000111 + 1000111 按照二进制先前的加法法则得出来是<code>1001110</code>，结果不是我们想要的0。</p>
+<blockquote>
+<p>怎么才能让2个二进制数相加得到0呢？</p>
+</blockquote>
+<p>想要得到0，就需要利用进位，比如在<code>11111111</code>（8个1）的基础上加1就可以得到<code>100000000</code>(一共9位，左边第一位是1，后面8个0) ，舍掉最左边的那个1就得到了8个0最终结果就等于0。把原码按位取反然后与原码相加就可以得到全1的二进制数。比如<code>0000111</code>按位取反就是<code>1111000</code>，他们俩相加得到<code>11111111</code>。 再把它加1就得到最后的结果0。整个过程需要3步，我们把最后两步合并成一个步骤，也就是把按位取反和加1合并到一起，其实就是把原码的反码加1。如<code>1111000</code>加1得到<code>1111001</code>。最后这两步合在一起叫做取原码的补码。最后得到的<code>1111001</code>就叫做<code>0000111</code>的补码。</p>
+<ul>
+<li>正整数的补码是其本身。</li>
+<li>负整数的补码是把它对应的正整数二进制码按位取反，也就做原码的反码然后再加1。</li>
+</ul>
+<p>比如正整数<code>7</code>的二进制码是<code>0000111</code>，它的补码还是它本身。再比如<code>-7</code>对应的正整数二进制码是<code>0000111</code>，它的反码就是<code>1111000</code>（把原码按位取反）。然后再<code>加1</code>就得到<code>1111001</code>。<code>1111001</code>就是<code>-7</code>的补码。我们再次把<code>1111001</code>和<code>0000111</code>按照二进制加法法则相加刚好得到0。这里需要注意的是，这里左边会产生一个溢出位，这个溢出位是去掉不要的，得到结果就是0。</p>
+<p>-1的补码全是1，因为它加上1之后就变成了0。</p>
+<blockquote>
+<p>计算机系统都是用补码来表示二进制码，这样的好处之一就是可以让加减法运算统一处理。</p>
+</blockquote>
+<h2 id="位模式拷贝"><a href="#位模式拷贝" class="headerlink" title="位模式拷贝"></a>位模式拷贝</h2><blockquote>
+<p>当把<code>char</code>类型的变量赋值给<code>short</code>类型的变量时，会把<code>char</code>的8个bit放在<code>short</code>的低八位（从右往左第一个字节）上。</p>
+</blockquote>
+<p>例如： </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> ch = <span class="string">&#x27;A&#x27;</span>; <span class="comment">// &#x27;A&#x27; ASCII：65 内存表示为 01000001</span></span><br><span class="line"><span class="keyword">short</span> s = ch; <span class="comment">// 内存表示为 00000000 | 01000001</span></span><br></pre></td></tr></table></figure>
+<p>一个特殊的情况就是当把一个<code>short</code>的<code>-1</code>赋值给一个<code>int</code>变量的时候，并不会得到<code>00000000 | 00000000 | 11111111 | 11111111</code>，因为如果这样的话表示的值就不是<code>-1</code>了。所以正确的做法就是把<code>所有的1</code>全部拷贝给<code>int</code>。<br>例如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">short</span> s = <span class="number">-1</span>; <span class="comment">// 内存表示为 11111111 | 11111111</span></span><br><span class="line"><span class="keyword">int</span> i = s; <span class="comment">// 内存表示为 11111111 | 11111111 | 11111111 | 11111111</span></span><br></pre></td></tr></table></figure>
+<p>相反如果把<code>short</code>类型的变量赋值给<code>char</code>类型的变量时，会把<code>short</code>的低八位（从右往左第一个字节）放在<code>char</code>仅有的一个字节上。会把多的字节自动剔除。<br>例如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">short</span> s = <span class="number">65</span>; <span class="comment">// 内存表示为 00000001 | 01000001</span></span><br><span class="line"><span class="keyword">char</span> ch = s; <span class="comment">// 内存表示为 01000001</span></span><br></pre></td></tr></table></figure>
+<h2 id="浮点数的表示"><a href="#浮点数的表示" class="headerlink" title="浮点数的表示"></a>浮点数的表示</h2><p>我们已经知道无符号二进制转成十进制公式为：</p>
+<p><img src="https://image.coder.cat/dd2fc7ee8cc062f42a633e67c9cd7fe6.png"></p>
+<p>这里的<code>i</code>是从0开始的也就是从右边的第一位是<code>2^0</code>，如果我们从一个负整数开始的话，就会存在负整数次幂，那么也就会出现小数部分了。<br>例如有一个16位的二进制数<code>000000011 | 11000000</code>  用它的前八位来表示整数部分，后八位来表示小数部分，就也可以这样表示<code>000000011.11000000</code>。这样后八位也就不再是整数次幂了，而是从左到右每一位分别是<code>2^(-1)~2^(-8)</code>。这个数就可以表示成：</p>
+<p><img src="https://image.coder.cat/8c7bdb11f670c587afe6a694ed948c90.png"></p>
+<p>这是其中一种浮点数表示方法，这种方法表示的浮点数会出现精度不够，表示的数值区间比较小，所以计算机实际并没有用该方法来表示浮点数。</p>
+<p>下面这种方法就是计算机内部真实表示浮点数的方法。</p>
+<p>我们先来看下十进制的科学计数法，用科学计数法表示123.45的话就是<code>1.2345 * 10^2</code>。其中1.2345 为<code>尾数</code>，10为<code>基数</code>，2为<code>指数</code>。计算机在表示浮点数的时候，也借用了十进制的科学计数法的思想，只不过基数为<code>2</code>了。</p>
+<p>例如<code>1000.01</code> 可以表示成<code>1.00001 * 2^3</code>，几次幂，小数点就向右移动几位。</p>
+<p>用<code>32位</code>的<code>float</code>来举例，首位是符号位<code>S</code>，紧跟后面<code>8位</code>是指数位<code>E</code>，最后<code>23位</code>称为尾数位<code>M</code>。</p>
+<p>计算公式：</p>
+<p><img src="https://image.coder.cat/cb4484727e77374e1bec9da86a091c4e.png"></p>
+<ul>
+<li><p>S：符号位</p>
+<blockquote>
+<p>S为0时刚好是正数，为1时是负数。</p>
+</blockquote>
+</li>
+<li><p>M：尾数部分</p>
+<blockquote>
+<p>它的取值范围是<code>1≤M＜2</code>，取值方式是从左到右每一位分别表示的是<code>2^-1~2^-23</code>，值就是然后对各个位的表示值求和，这里跟先前浮点数表示的办法一致，都是从负整数次幂开始。由于尾数的整数部分始终都是<code>1</code>，所以这个<code>1</code>可以被省略，这样就可以多出一位来提升精度。</p>
+</blockquote>
+</li>
+<li><p>E：指数部分</p>
+<blockquote>
+<p>减去127是因为偏移量是127。</p>
+</blockquote>
+</li>
+</ul>
+<p>例如<code>0 | 10000010 | 11110000000000000000000</code>的每一部分别是：</p>
+<ul>
+<li>S：<code>0</code><blockquote>
+<p>表示整数。</p>
+</blockquote>
+</li>
+<li>M：<code>11110000000000000000000</code>  <blockquote>
+<p>这里需要再加1，因为为了提升小数精度省略了1，所以要加回来。所以完整的尾数部分应该是<code>1.1111</code>（省略了后面的0）。 2^0 + 2^-1 + 2^-2 + 2^-3 + 2^-4  = 1.9375</p>
+</blockquote>
+</li>
+<li>E：<code>10000010</code> <blockquote>
+<p>2^7 + 2^1 = 130</p>
+</blockquote>
+</li>
+</ul>
+<p>分别带入公式得：</p>
+<p>二进制形式：</p>
+<p><img src="https://image.coder.cat/7174f02edf01c94699f4b0a1a5f0dede.png"></p>
+<p>十进制形式：</p>
+<p><img src="https://image.coder.cat/c49854e22c96541aad7f80c6d0644331.png"></p>
+<p>详细过程：<br><code>1 * 1.1111 * 2^(130-127)</code> =&gt; <code>1 * 1.1111 * 2^3</code> =&gt; <code>1 * 1111.1</code>（几次幂，小数点就向右移动几位） =&gt; <code>1 * (2^3 + 2^2 + 2^1 + 2^0 + 2^-1)</code> =&gt; <code>1 * (8 + 4 + 2 + 1 + 0.5)</code> =&gt; 15.5</p>
+<h2 id="浮点数与整数相互赋值"><a href="#浮点数与整数相互赋值" class="headerlink" title="浮点数与整数相互赋值"></a>浮点数与整数相互赋值</h2><p>当我们在把浮点数与整数相互赋值的时候，并不会直接拷贝bit位，而是重新计算出在新的类型中的位模式。<br>例如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> i = <span class="number">5</span>; <span class="comment">// 内存表示 00000000 | 00000000 | 00000000 | 00000101</span></span><br><span class="line"><span class="comment">// 重新计算5在float中的表示方式</span></span><br><span class="line"><span class="keyword">float</span> f = i; <span class="comment">// 内存表示 0 | 00000000 | 00000000000000000000101</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%f&quot;</span>, f) <span class="comment">// output is 5.0</span></span><br></pre></td></tr></table></figure>
+<p>来一点更刺激的！！！</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 2^30</span></span><br><span class="line"><span class="keyword">int</span> i = <span class="number">1073741824</span>; <span class="comment">// 内存表示 01000000 | 00000000 | 00000000 | 00000000</span></span><br><span class="line"><span class="comment">// 这里就不会重新计算在float中的表示方式了，而是直接把bit位拷贝过去。用float的解析方式去解析int的那块内存。</span></span><br><span class="line"><span class="keyword">float</span> f = *(<span class="keyword">float</span> *)&amp;i; <span class="comment">// 内存表示 0 | 10000000 |00000000000000000000000</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 1 * 2^(128-127) * 1 = 2</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%f&quot;</span>, f) <span class="comment">// output is 2.0</span></span><br></pre></td></tr></table></figure>
+<p>这里就不会重新计算<code>1073741824</code>在float中的表示方式了，而是直接把<code>int</code>的<code>bit位拷贝过去</code>。用float的解析方式去<code>解析int的那块内存</code>。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A0%E7%AC%A6%E5%8F%B7%E6%95%B4%E6%95%B0%E7%9A%84%E8%A1%A8%E7%A4%BA"><span class="toc-number">1.</span> <span class="toc-text">无符号整数的表示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Char%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E8%A1%A8%E7%A4%BA"><span class="toc-number">2.</span> <span class="toc-text">Char在内存中的表示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Short%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E8%A1%A8%E7%A4%BA"><span class="toc-number">3.</span> <span class="toc-text">Short在内存中的表示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E5%8A%A0%E5%87%8F%E6%B3%95"><span class="toc-number">4.</span> <span class="toc-text">实现加减法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%8D%E6%A8%A1%E5%BC%8F%E6%8B%B7%E8%B4%9D"><span class="toc-number">5.</span> <span class="toc-text">位模式拷贝</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%AE%E7%82%B9%E6%95%B0%E7%9A%84%E8%A1%A8%E7%A4%BA"><span class="toc-number">6.</span> <span class="toc-text">浮点数的表示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%AE%E7%82%B9%E6%95%B0%E4%B8%8E%E6%95%B4%E6%95%B0%E7%9B%B8%E4%BA%92%E8%B5%8B%E5%80%BC"><span class="toc-number">7.</span> <span class="toc-text">浮点数与整数相互赋值</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&text=简单数据类型在内存中的表示"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&title=简单数据类型在内存中的表示"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&is_video=false&description=简单数据类型在内存中的表示"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=简单数据类型在内存中的表示&body=Check out this article: http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&title=简单数据类型在内存中的表示"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&title=简单数据类型在内存中的表示"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&title=简单数据类型在内存中的表示"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&title=简单数据类型在内存中的表示"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&name=简单数据类型在内存中的表示&description=&lt;p&gt;内存的最小单位是字节，一个字节等于8位（bit），每一位要么是0要么是1，也就是用二进制来表示。&lt;/p&gt;
+&lt;p&gt;一个字节在内存中的表示为：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://image.coder.cat/bit.png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;无符号整数的表示&#34;&gt;&lt;a href=&#34;#无符号整数的表示&#34; class=&#34;headerlink&#34; title=&#34;无符号整数的表示&#34;&gt;&lt;/a&gt;无符号整数的表示&lt;/h2&gt;&lt;p&gt;无符号二进制转成十进制公式：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://image.coder.cat/dd2fc7ee8cc062f42a633e67c9cd7fe6.png&#34;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;w&lt;/code&gt;：二进制位的长度。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;i&lt;/code&gt;：二进制位从右往左开始的下标，从0开始计数。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;w-1&lt;/code&gt;：由于i是从0开始计数，所以最后一个下标就是w-1。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;x(i)&lt;/code&gt;：第&lt;code&gt;i&lt;/code&gt;位的值，要么是0要么是1。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;2^i&lt;/code&gt;：2的第&lt;code&gt;i&lt;/code&gt;次幂。"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2019/08/22/representation-of-simple-data-types-in-memory/&t=简单数据类型在内存中的表示"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2018-2020
+    CoderCat
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+
+    <!-- jquery -->
+
+<script src="/lib/jquery/jquery.min.js"></script>
+
+
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+
+<!-- clipboard -->
+
+  
+<script src="/lib/clipboard/clipboard.min.js"></script>
+
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>

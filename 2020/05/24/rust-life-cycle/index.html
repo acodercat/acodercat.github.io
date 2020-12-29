@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="程序中每个变量都有一个固定的作用域，当超出变量的作用域以后，变量就会被销毁。变量在作用域中从初始化到销毁的整个过程称之为生命周期。  rust的每个函数都会有一个作用域，也可以在函数中使用一对花括号再内嵌一个作用域。比如如下代码中就在main函数的函数作用域中又内嵌了一个作用域： 123456fn main() &amp;#123;  let a;       &#x2F;&#x2F; --------------+--">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Rust生命周期">
+<meta property="og:url" content="http://coder.cat/2020/05/24/rust-life-cycle/index.html">
+<meta property="og:site_name" content="CoderCat&#39;s Blog">
+<meta property="og:description" content="程序中每个变量都有一个固定的作用域，当超出变量的作用域以后，变量就会被销毁。变量在作用域中从初始化到销毁的整个过程称之为生命周期。  rust的每个函数都会有一个作用域，也可以在函数中使用一对花括号再内嵌一个作用域。比如如下代码中就在main函数的函数作用域中又内嵌了一个作用域： 123456fn main() &amp;#123;  let a;       &#x2F;&#x2F; --------------+--">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-05-24T02:45:55.000Z">
+<meta property="article:modified_time" content="2020-12-29T08:27:04.298Z">
+<meta property="article:author" content="CoderCat">
+<meta property="article:tag" content="Rust">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Rust生命周期</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+      
+<link rel="stylesheet" href="/css/rtl.css">
+
+    
+    <!-- rss -->
+    
+    
+      <link rel="alternate" href="/true" title="CoderCat&#39;s Blog" type="application/atom+xml" />
+    
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2020/08/19/function-stack-frame/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" href="/2020/03/22/system-process-api/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2020/05/24/rust-life-cycle/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/05/24/rust-life-cycle/&text=Rust生命周期"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/05/24/rust-life-cycle/&title=Rust生命周期"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/05/24/rust-life-cycle/&is_video=false&description=Rust生命周期"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Rust生命周期&body=Check out this article: http://coder.cat/2020/05/24/rust-life-cycle/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/05/24/rust-life-cycle/&title=Rust生命周期"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/05/24/rust-life-cycle/&title=Rust生命周期"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/05/24/rust-life-cycle/&title=Rust生命周期"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/05/24/rust-life-cycle/&title=Rust生命周期"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/05/24/rust-life-cycle/&name=Rust生命周期&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/05/24/rust-life-cycle/&t=Rust生命周期"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E5%80%9F%E7%94%A8"><span class="toc-number">1.</span> <span class="toc-text">生命周期与借用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E4%B8%AD%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%8F%82%E6%95%B0"><span class="toc-number">2.</span> <span class="toc-text">函数中的生命周期参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E6%9E%84%E4%BD%93%E4%B8%AD%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%8F%82%E6%95%B0"><span class="toc-number">3.</span> <span class="toc-text">结构体中的生命周期参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%8F%82%E6%95%B0"><span class="toc-number">4.</span> <span class="toc-text">静态生命周期参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Rust生命周期
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">CoderCat</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-05-24T02:45:55.000Z" itemprop="datePublished">2020-05-24</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Rust/" rel="tag">Rust</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <blockquote>
+<p>程序中每个变量都有一个固定的作用域，当超出变量的作用域以后，变量就会被销毁。变量在作用域中从初始化到销毁的整个过程称之为生命周期。</p>
+</blockquote>
+<p>rust的每个函数都会有一个作用域，也可以在函数中使用一对花括号再内嵌一个作用域。比如如下代码中就在main函数的函数作用域中又内嵌了一个作用域：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> a;       <span class="comment">// --------------+-- a start</span></span><br><span class="line">  &#123;            <span class="comment">//               |</span></span><br><span class="line">    <span class="keyword">let</span> b = <span class="number">5</span>; <span class="comment">// -+-- b start  |</span></span><br><span class="line">  &#125;            <span class="comment">// -+-- b over   |</span></span><br><span class="line">&#125;              <span class="comment">// --------------+-- a over</span></span><br></pre></td></tr></table></figure>
+<p>上面代码存在两个作用域，一个是<code>main</code>函数本身的作用域，另外一个是在<code>main</code>函数中使用一对<code>&#123;&#125;</code>定义了一个内部作用域。第2行代码声明了变量<code>a</code>,它的作用域是整个<code>main</code>函数，也可以说它的生命周期是从第2行代码到第6行代码。在第4行代码中声明了变量<code>b</code>，它的作用域是第4行到第6行。我们可以发现变量的生命周期是有长短的。</p>
+<h2 id="生命周期与借用"><a href="#生命周期与借用" class="headerlink" title="生命周期与借用"></a>生命周期与借用</h2><blockquote>
+<p>rust中的借用是指对一块内存空间的引用。rust有一条借用规则是借用方的生命周期不能比出借方的生命周期还要长。</p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> a;                <span class="comment">// -------------+-- a start</span></span><br><span class="line">  &#123;                     <span class="comment">//              |</span></span><br><span class="line">    <span class="keyword">let</span> b = <span class="number">5</span>;          <span class="comment">// -+-- b start |</span></span><br><span class="line">    a = &amp;b;             <span class="comment">//  |           |</span></span><br><span class="line">  &#125;                     <span class="comment">// -+-- b over  |</span></span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;a: &#123;&#125;&quot;</span>, a); <span class="comment">//              |</span></span><br><span class="line">&#125;                       <span class="comment">// -------------+-- a over</span></span><br></pre></td></tr></table></figure>
+<p>上面第5行代码把<code>变量b</code>借给了<code>变量a</code>，所以a是借用方，b是出借方。可以发现<code>变量a</code>（借用方）的生命周期比<code>变量b</code>（出借方）的生命周期长，于是这样做违背了rust的借用规则（借用方的生命周期不能比出借方的生命周期还要长）。因为当b在生命周期结束时，a还是保持了对b的借用，就会导致a所指向的那块内存空间已经被释放了，那么变量a就会是一个悬垂引用。</p>
+<p>运行上面代码会报如下错误：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">error[E0597]: `b` does not live long enough</span><br><span class="line"> --&gt; src/main.rs:5:13</span><br><span class="line">  |</span><br><span class="line">5 |         a = &amp;b;</span><br><span class="line">  |             ^^ borrowed value does not live long enough</span><br><span class="line">6 |     &#125;;</span><br><span class="line">  |     - `b` dropped here <span class="keyword">while</span> still borrowed</span><br><span class="line">7 |     println!(<span class="string">&quot;a:&#123;&#125;&quot;</span>, a);</span><br><span class="line">  |                      - borrow later used here</span><br></pre></td></tr></table></figure>
+<p>意思就是说变量b的生命周期不够长。变量b已经被销毁了仍然对它进行了借用。</p>
+<p>一个正确的例子：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> a = <span class="number">1</span>;            <span class="comment">// -------------+-- a start</span></span><br><span class="line">  <span class="keyword">let</span> b = &amp;a;           <span class="comment">// -------------+-- b start</span></span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;a: &#123;&#125;&quot;</span>, a); <span class="comment">//              |</span></span><br><span class="line">&#125;                       <span class="comment">// -------------+-- b, a over</span></span><br></pre></td></tr></table></figure>
+<p>观察上面代码发现变量b（借用方）的生命周期要比变量a（出借方）的生命周期要短，所以借用检查器会通过。</p>
+<h2 id="函数中的生命周期参数"><a href="#函数中的生命周期参数" class="headerlink" title="函数中的生命周期参数"></a>函数中的生命周期参数</h2><blockquote>
+<p>对于一个参数和返回值都包含引用的函数而言，该函数的参数是出借方，函数返回值所绑定到的那个变量就是借用方。所以这种函数也需要满足借用规则（借用方的生命周期不能比出借方的生命周期还要长）。那么就需要对函数返回值的生命周期进行标注，告知编译器函数返回值的生命周期信息。</p>
+</blockquote>
+<p>我们下面定义一个函数，该函数接收两个<code>i32</code>的引用类型，返回大的那个数的引用。</p>
+<p>示例：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">max_num</span></span>(x: &amp;<span class="built_in">i32</span>, y: &amp;<span class="built_in">i32</span>) -&gt; &amp;<span class="built_in">i32</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> x &gt; y &#123;</span><br><span class="line">    &amp;x</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    &amp;y</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> x = <span class="number">1</span>;                <span class="comment">// -------------+-- x start</span></span><br><span class="line">  <span class="keyword">let</span> max;                  <span class="comment">// -------------+-- max start</span></span><br><span class="line">  &#123;                         <span class="comment">//              |</span></span><br><span class="line">    <span class="keyword">let</span> y = <span class="number">8</span>;              <span class="comment">// -------------+-- y start</span></span><br><span class="line">    max = max_num(&amp;x, &amp;y);  <span class="comment">//              |</span></span><br><span class="line">  &#125;                         <span class="comment">// -------------+-- y over</span></span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;max: &#123;&#125;&quot;</span>, max); <span class="comment">//              |</span></span><br><span class="line">&#125;                           <span class="comment">// -------------+-- max, x over</span></span><br></pre></td></tr></table></figure>
+<p>由于缺少生命周期参数，编译器不知道<code>max_num</code>函数返回的引用生命周期是什么，所以运行报错：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">error[E0106]: missing lifetime specifier</span><br><span class="line"> --&gt; src/main.rs:1:33</span><br><span class="line">  |</span><br><span class="line">1 | fn max_num(x: &amp;i32, y: &amp;i32) -&gt; &amp;i32 &#123;</span><br><span class="line">  |               ----     ----     ^ expected named lifetime parameter</span><br><span class="line">  |</span><br><span class="line">  = <span class="built_in">help</span>: this <span class="keyword">function</span><span class="string">&#x27;s return type contains a borrowed value, but the signature does not say whether it is borrowed from `x` or `y`</span></span><br></pre></td></tr></table></figure>
+
+<p>函数的生命周期参数声明在函数名后的尖括号<code>&lt;&gt;</code>里，然后每个参数名跟在一个单引号<code>&#39;</code>后面，多个参数用逗号隔开。如果在参数和返回值的地方需要使用生命周期进行标注时，只需要在<code>&amp;</code>符号后面加上一个单引号<code>&#39;</code>和之前声明的参数名即可。生命周期参数名可以是任意合法的名称。例如：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">max_num</span></span>&lt;<span class="symbol">&#x27;a</span>&gt;(x: &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span>, y: &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span>) -&gt; &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> x &gt; y &#123;</span><br><span class="line">    &amp;x</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    &amp;y</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> x = <span class="number">1</span>;                <span class="comment">// -------------+-- x start</span></span><br><span class="line">  <span class="keyword">let</span> max;                  <span class="comment">// -------------+-- max start</span></span><br><span class="line">  &#123;                         <span class="comment">//              |</span></span><br><span class="line">    <span class="keyword">let</span> y = <span class="number">8</span>;              <span class="comment">// -------------+-- y start</span></span><br><span class="line">    max = max_num(&amp;x, &amp;y);  <span class="comment">//              |</span></span><br><span class="line">  &#125;                         <span class="comment">// -------------+-- y over</span></span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;max: &#123;&#125;&quot;</span>, max); <span class="comment">//              |</span></span><br><span class="line">&#125;                           <span class="comment">// -------------+-- max, x over</span></span><br></pre></td></tr></table></figure>
+<p>上面代码对函数<code>max_num</code>的参数和返回值的生命周期进行了标注，用于告诉编译器函数参数和函数返回值的生命周期一样长。在第13行代码对<code>max_num</code>进行调用时，编译器会把变量x的生命周期和变量y的生命周期与<code>max_num</code>函数的生命周期参数<code>&#39;a</code>建立关联。这里值得注意的是，变量x和变量y的生命周期长短其实是不一样的，那么关联到max_num函数的生命周期参数<code>&#39;a</code>的长度是多少呢？实际上编译器会取变量x的生命周期和变量y的生命周期<code>重叠</code>的部分，也就是取最短的那个变量的生命周期与<code>&#39;a</code>建立关联。这里最短的生命周期是变量<code>y</code>，所以<code>&#39;a</code>关联的生命周期就是变量y的生命周期。</p>
+<p>运行上面代码，会有报错信息：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">error[E0597]: `y` does not live long enough</span><br><span class="line">  --&gt; src/main.rs:13:27</span><br><span class="line">   |</span><br><span class="line">13 |         max = max_num(&amp;x, &amp;y);</span><br><span class="line">   |                           ^^ borrowed value does not live long enough</span><br><span class="line">14 |     &#125;</span><br><span class="line">   |     - `y` dropped here <span class="keyword">while</span> still borrowed</span><br><span class="line">15 |     println!(<span class="string">&quot;max: &#123;&#125;&quot;</span>, max);</span><br><span class="line">   |                         --- borrow later used here</span><br></pre></td></tr></table></figure>
+<p>报错信息说变量y的生命周期不够长，当y的生命周期结束后，仍然被借用。</p>
+<p>我们仔细观察发现<code>max_num</code>函数返回值所绑定到的那个变量<code>max</code>（借用方）的生命周期是从第10行代码到第16行代码，而<code>max_num</code>函数的返回值（出借方）的生命周期是<code>&#39;a</code>，<code>&#39;a</code>的生命周期又是变量x的生命周期和变量y的生命周期中最短的那个，也就是变量y的生命周期。变量y的生命周期是代码的第12行到第14行。所以这里不满足借用规则（借用方的生命周期不能比出借方的生命周期还要长）。也就是为什么编译器会说变量y的生命周期不够长的原因了。函数的生命周期参数并不会改变生命周期的长短，只是用于编译来判断是否满足借用规则。</p>
+<p>将代码做如下调整，使其变量max的生命周期小于变量y的生命周期，编译器就可以正常通过：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">max_num</span></span>&lt;<span class="symbol">&#x27;a</span>&gt;(x: &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span>, y: &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span>) -&gt; &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> x &gt; y &#123;</span><br><span class="line">    &amp;x</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    &amp;y</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> x = <span class="number">1</span>;                  <span class="comment">// -------------+-- x start</span></span><br><span class="line">  <span class="keyword">let</span> y = <span class="number">8</span>;                  <span class="comment">// -------------+-- y start</span></span><br><span class="line">  <span class="keyword">let</span> max = max_num(&amp;x, &amp;y);  <span class="comment">// -------------+-- max start</span></span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;max: &#123;&#125;&quot;</span>, max);   <span class="comment">//              |</span></span><br><span class="line">&#125;                             <span class="comment">// -------------+-- max, y, x over</span></span><br></pre></td></tr></table></figure>
+
+
+<p>如果函数参数的生命周期参数与函数返回值的生命周期参数不建关联的话，那么生命周期参数就没有任何意义。</p>
+<p>例如：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">max_num</span></span>&lt;<span class="symbol">&#x27;a</span>, <span class="symbol">&#x27;b</span>&gt;(x: &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span>, y: &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span>) -&gt; &amp;<span class="symbol">&#x27;b</span> <span class="built_in">i32</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> x &gt; y &#123;</span><br><span class="line">    &amp;x</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    &amp;y</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面代码中函数返回值的生命周期参数<code>&#39;b&#39;</code>是未知的，编译器不知道这个<code>&#39;b&#39;</code>的具体生命周期是多少，所以没有任何意义。</p>
+<p>可以显示指明多个生命周期参数间的关系，从而使每个生命周期参数都有一个具体的的生命周期。例如：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">max_num</span></span>&lt;<span class="symbol">&#x27;a</span>, <span class="symbol">&#x27;b</span>: <span class="symbol">&#x27;a</span>&gt;(x: &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span>, y: &amp;<span class="symbol">&#x27;b</span> <span class="built_in">i32</span>) -&gt; &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> x &gt; y &#123;</span><br><span class="line">    &amp;x</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    &amp;y</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> x = <span class="number">1</span>;                  <span class="comment">// -------------+-- x start</span></span><br><span class="line">  <span class="keyword">let</span> y = <span class="number">8</span>;                  <span class="comment">// -------------+-- y start</span></span><br><span class="line">  <span class="keyword">let</span> max = max_num(&amp;x, &amp;y);  <span class="comment">// -------------+-- max start</span></span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;max: &#123;&#125;&quot;</span>, max);   <span class="comment">//              |</span></span><br><span class="line">&#125;                             <span class="comment">// -------------+-- max, y, x over</span></span><br></pre></td></tr></table></figure>
+<p>上面代码使用<code>&#39;b: &#39;a</code>来标注<code>&#39;a</code>与<code>&#39;b</code>之间的生命周期关系，它表示<code>&#39;a</code>的生命周期不能超过<code>&#39;b</code>，即函数返回值的生命周期<code>&#39;a</code>（借用方）不能超过<code>&#39;b``（出借方），</code>‘a<code>也不会超过</code>‘a`（出借方）。</p>
+<h2 id="结构体中的生命周期参数"><a href="#结构体中的生命周期参数" class="headerlink" title="结构体中的生命周期参数"></a>结构体中的生命周期参数</h2><blockquote>
+<p>一个包含<code>引用成员</code>的结构体，必须保证结构体本身的生命周期不能超过任何一个<code>引用成员</code>的生命周期。否则就会出现成员已经被销毁之后，结构体还保持对那个成员的引用就会产生悬垂引用。所以这依旧是rust的借用规则即借用方（结构体本身）的生命周期不能比出借方（结构体中的引用成员）的生命周期还要长。因此就需要在声明结构体的同时也声明生命周期参数，同时对结构体的引用成员进行生命周期参数标注。</p>
+</blockquote>
+<p>结构体生命周期参数声明在结构体名称后的尖括号<code>&lt;&gt;</code>里，每个参数名跟在一个单引号<code>&#39;</code>后面，多个参数用逗号隔开。在进行标注时，只需要在引用成员的<code>&amp;</code>符号后面加上一个单引号<code>&#39;</code>和之前声明的参数名即可。生命周期参数名可以是任意合法的名称。例如：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Foo</span></span>&lt;<span class="symbol">&#x27;a</span>&gt; &#123;</span><br><span class="line">  v: &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面代码可以把结构体<code>Foo</code>的生命周期与成员<code>v</code>的生命周期建立一个关联用于编译器进行借用规则判断。</p>
+<p>下面是一个违反借用规则的例子：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[derive(Debug)]</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Foo</span></span>&lt;<span class="symbol">&#x27;a</span>&gt; &#123;</span><br><span class="line">  v: &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> foo;                    <span class="comment">// -------------+-- foo start</span></span><br><span class="line">  &#123;                           <span class="comment">//              |</span></span><br><span class="line">    <span class="keyword">let</span> v = <span class="number">123</span>;              <span class="comment">// -------------+-- v start</span></span><br><span class="line">    foo = Foo &#123;               <span class="comment">//              |</span></span><br><span class="line">      v: &amp;v                   <span class="comment">//              |</span></span><br><span class="line">    &#125;                         <span class="comment">//              |</span></span><br><span class="line">  &#125;                           <span class="comment">// -------------+-- v over</span></span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;foo: &#123;:?&#125;&quot;</span>, foo); <span class="comment">//              |</span></span><br><span class="line">&#125;                             <span class="comment">// -------------+-- foo over</span></span><br></pre></td></tr></table></figure>
+<p>上面代码的第14行到15行<code>foo</code>的生命周期依然没有结束，但是它所引用的变量<code>v</code>已经被销毁了，因此出现了悬垂引用。编译器会给出报错提示：变量<code>v</code>的的生命周期不够长。</p>
+<h2 id="静态生命周期参数"><a href="#静态生命周期参数" class="headerlink" title="静态生命周期参数"></a>静态生命周期参数</h2><blockquote>
+<p>有一个特殊的生命周期参数叫<code>static</code>，它的生命周期是整个应用程序。跟其他生命周期参数不同的是，它是表示一个具体的生命周期长度，而不是泛指。<code>static</code>生命周期的变量存储在静态段中。</p>
+</blockquote>
+<p>所有的字符串字面值都是 <code>&#39;static</code> 生命周期，例如：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> s: &amp;<span class="symbol">&#x27;static</span> <span class="built_in">str</span> = <span class="string">&quot;codercat is a static lifetime.&quot;</span>;</span><br></pre></td></tr></table></figure>
+<p>上面代码中的生命周期参数可以省略，就变成如下形式：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> s: &amp;<span class="built_in">str</span> = <span class="string">&quot;codercat is a static lifetime.&quot;</span>;</span><br></pre></td></tr></table></figure>
+<p>还有<code>static</code>变量的生命周期也是<code>&#39;static</code>。</p>
+<p>例如：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> V: <span class="built_in">i32</span> = <span class="number">123</span>;</span><br></pre></td></tr></table></figure>
+
+
+<p>可以对函数的参数进行限制，让其只能只能接受静态变量：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">max_num</span></span>(x: &amp;<span class="symbol">&#x27;static</span> <span class="built_in">i32</span>, y: &amp;<span class="symbol">&#x27;static</span> <span class="built_in">i32</span>) -&gt; &amp;<span class="symbol">&#x27;static</span> <span class="built_in">i32</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> x &gt; y &#123;</span><br><span class="line">    &amp;x</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    &amp;y</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在使用<code>static</code>生命周期参数的时候，由于它已经内置在编译器中了，所以不需要进行声明。在结构体中的使用方式也类似就不再次举例了。</p>
+<p>下面举一个特殊的例子：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">max_num</span></span>&lt;<span class="symbol">&#x27;a</span>&gt;(x: &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span>, y: &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span>) -&gt; &amp;<span class="symbol">&#x27;a</span> <span class="built_in">i32</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> x &gt; y &#123;</span><br><span class="line">    &amp;x</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    &amp;y</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> x = <span class="number">1</span>;                <span class="comment">// -------------+-- x start</span></span><br><span class="line">  <span class="keyword">let</span> max;                  <span class="comment">// -------------+-- max start</span></span><br><span class="line">  &#123;                         <span class="comment">//              |</span></span><br><span class="line">    <span class="keyword">static</span> Y: <span class="built_in">i32</span> = <span class="number">8</span>;      <span class="comment">// -------------+-- Y start</span></span><br><span class="line">    max = max_num(&amp;x, &amp;Y);  <span class="comment">//              |</span></span><br><span class="line">  &#125;                         <span class="comment">//              |</span></span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;max: &#123;&#125;&quot;</span>, max); <span class="comment">//              |</span></span><br><span class="line">&#125;                           <span class="comment">// -------------+-- max, Y, x over</span></span><br></pre></td></tr></table></figure>
+<p>还是之前的<code>max_num</code>函数。在代码的第12行定义了一个静态变量，它的生命周期是<code>&#39;static</code> 。<code>max_num</code>函数的生命周期参数<code>&#39;a</code>会取变量<code>x</code>的生命周期和变量<code>Y</code>的生命周期重叠的部分。所以传入<code>max_num</code>函数并不会报错。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>以上内容是我个人在学习rust生命周期参数相关内容时的总结，如有错误欢迎指正。文中的借用和引用实际上是一个东西。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E5%80%9F%E7%94%A8"><span class="toc-number">1.</span> <span class="toc-text">生命周期与借用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E4%B8%AD%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%8F%82%E6%95%B0"><span class="toc-number">2.</span> <span class="toc-text">函数中的生命周期参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E6%9E%84%E4%BD%93%E4%B8%AD%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%8F%82%E6%95%B0"><span class="toc-number">3.</span> <span class="toc-text">结构体中的生命周期参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%8F%82%E6%95%B0"><span class="toc-number">4.</span> <span class="toc-text">静态生命周期参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2020/05/24/rust-life-cycle/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/05/24/rust-life-cycle/&text=Rust生命周期"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/05/24/rust-life-cycle/&title=Rust生命周期"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/05/24/rust-life-cycle/&is_video=false&description=Rust生命周期"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Rust生命周期&body=Check out this article: http://coder.cat/2020/05/24/rust-life-cycle/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/05/24/rust-life-cycle/&title=Rust生命周期"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/05/24/rust-life-cycle/&title=Rust生命周期"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/05/24/rust-life-cycle/&title=Rust生命周期"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/05/24/rust-life-cycle/&title=Rust生命周期"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/05/24/rust-life-cycle/&name=Rust生命周期&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/05/24/rust-life-cycle/&t=Rust生命周期"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2018-2020
+    CoderCat
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+
+    <!-- jquery -->
+
+<script src="/lib/jquery/jquery.min.js"></script>
+
+
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+
+<!-- clipboard -->
+
+  
+<script src="/lib/clipboard/clipboard.min.js"></script>
+
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>

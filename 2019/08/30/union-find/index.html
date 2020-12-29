@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="介绍定义 并查集是计算机科学中为了解决集合之间的合并和查询操作而存在的一种树型数据结构。并查集是由若干个大小不同的子树来表示的，每颗子树表示一个集合。集合的数量又叫做连通分量。  基本操作 find（查询）：确定元素属于哪一个子集。它可以被用来确定两个元素是否属于同一子集。 union（合并）：将两个子集合并成同一个集合。 isConnected（两个元素是否相连）：确定两个元素是否属于同一子集或">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图解数据结构-并查集">
+<meta property="og:url" content="http://coder.cat/2019/08/30/union-find/index.html">
+<meta property="og:site_name" content="CoderCat&#39;s Blog">
+<meta property="og:description" content="介绍定义 并查集是计算机科学中为了解决集合之间的合并和查询操作而存在的一种树型数据结构。并查集是由若干个大小不同的子树来表示的，每颗子树表示一个集合。集合的数量又叫做连通分量。  基本操作 find（查询）：确定元素属于哪一个子集。它可以被用来确定两个元素是否属于同一子集。 union（合并）：将两个子集合并成同一个集合。 isConnected（两个元素是否相连）：确定两个元素是否属于同一子集或">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://image.coder.cat/unionfind1.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind14.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind2.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind15.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind2.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind15.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind2.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind15.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind3.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind16.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind4.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind17.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind1.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind18.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind5.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind19.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind5.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind6.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind7.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind8.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind8.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind9.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind10.png">
+<meta property="og:image" content="https://image.coder.cat/unionfind11.png">
+<meta property="article:published_time" content="2019-08-30T01:20:39.000Z">
+<meta property="article:modified_time" content="2020-12-29T06:57:22.055Z">
+<meta property="article:author" content="CoderCat">
+<meta property="article:tag" content="Computer science">
+<meta property="article:tag" content="Algorithm">
+<meta property="article:tag" content="Data structure">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.coder.cat/unionfind1.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>图解数据结构-并查集</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+      
+<link rel="stylesheet" href="/css/rtl.css">
+
+    
+    <!-- rss -->
+    
+    
+      <link rel="alternate" href="/true" title="CoderCat&#39;s Blog" type="application/atom+xml" />
+    
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2019/09/10/laravel-state-pattern/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" href="/2019/08/22/representation-of-simple-data-types-in-memory/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2019/08/30/union-find/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2019/08/30/union-find/&text=图解数据结构-并查集"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2019/08/30/union-find/&title=图解数据结构-并查集"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2019/08/30/union-find/&is_video=false&description=图解数据结构-并查集"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=图解数据结构-并查集&body=Check out this article: http://coder.cat/2019/08/30/union-find/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2019/08/30/union-find/&title=图解数据结构-并查集"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2019/08/30/union-find/&title=图解数据结构-并查集"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2019/08/30/union-find/&title=图解数据结构-并查集"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2019/08/30/union-find/&title=图解数据结构-并查集"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2019/08/30/union-find/&name=图解数据结构-并查集&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2019/08/30/union-find/&t=图解数据结构-并查集"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89"><span class="toc-number">1.1.</span> <span class="toc-text">定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-number">1.2.</span> <span class="toc-text">基本操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A"><span class="toc-number">1.3.</span> <span class="toc-text">名词解释</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%94%E7%94%A8"><span class="toc-number">1.4.</span> <span class="toc-text">应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#quick-find%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.</span> <span class="toc-text">quick find实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">2.1.</span> <span class="toc-text">初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2"><span class="toc-number">2.2.</span> <span class="toc-text">查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E5%85%83%E7%B4%A0%E6%98%AF%E5%90%A6%E7%9B%B8%E8%BF%9E"><span class="toc-number">2.3.</span> <span class="toc-text">两个元素是否相连</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%88%E5%B9%B6"><span class="toc-number">2.4.</span> <span class="toc-text">合并</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#quick-union%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.</span> <span class="toc-text">quick union实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96-1"><span class="toc-number">3.1.</span> <span class="toc-text">初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2-1"><span class="toc-number">3.2.</span> <span class="toc-text">查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E5%85%83%E7%B4%A0%E6%98%AF%E5%90%A6%E7%9B%B8%E8%BF%9E-1"><span class="toc-number">3.3.</span> <span class="toc-text">两个元素是否相连</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%88%E5%B9%B6-1"><span class="toc-number">3.4.</span> <span class="toc-text">合并</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A0%E6%9D%83quick-union"><span class="toc-number">4.</span> <span class="toc-text">加权quick union</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%91%E7%9A%84%E6%B7%B1%E5%BA%A6"><span class="toc-number">4.1.</span> <span class="toc-text">树的深度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E6%80%9D%E8%B7%AF"><span class="toc-number">4.2.</span> <span class="toc-text">优化思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E6%80%9D%E8%B7%AF%E8%AF%81%E6%98%8E"><span class="toc-number">4.3.</span> <span class="toc-text">优化思路证明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="toc-number">4.4.</span> <span class="toc-text">具体实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E5%8E%8B%E7%BC%A9"><span class="toc-number">5.</span> <span class="toc-text">路径压缩</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E4%BC%98%E6%A0%91%E7%BB%93%E6%9E%84"><span class="toc-number">5.1.</span> <span class="toc-text">最优树结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E5%8E%8B%E7%BC%A9%E6%80%9D%E8%B7%AF"><span class="toc-number">5.2.</span> <span class="toc-text">路径压缩思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E5%8E%8B%E7%BC%A9%E8%BF%87%E7%A8%8B%E6%BC%94%E7%A4%BA"><span class="toc-number">5.3.</span> <span class="toc-text">路径压缩过程演示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0-1"><span class="toc-number">5.4.</span> <span class="toc-text">具体实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BA%90%E4%BB%A3%E7%A0%81"><span class="toc-number">6.</span> <span class="toc-text">源代码</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        图解数据结构-并查集
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">CoderCat</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-08-30T01:20:39.000Z" itemprop="datePublished">2019-08-30</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/Algorithm-and-data-structure/">Algorithm and data structure</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Algorithm/" rel="tag">Algorithm</a>, <a class="tag-link-link" href="/tags/Computer-science/" rel="tag">Computer science</a>, <a class="tag-link-link" href="/tags/Data-structure/" rel="tag">Data structure</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><blockquote>
+<p>并查集是计算机科学中为了解决<code>集合</code>之间的合并和查询操作而存在的一种树型数据结构。并查集是由若干个大小不同的子树来表示的，每颗子树表示一个集合。集合的数量又叫做<code>连通分量</code>。</p>
+</blockquote>
+<h3 id="基本操作"><a href="#基本操作" class="headerlink" title="基本操作"></a>基本操作</h3><ul>
+<li>find（查询）：确定元素属于哪一个子集。它可以被用来确定两个元素是否属于同一子集。</li>
+<li>union（合并）：将两个子集合并成同一个集合。</li>
+<li>isConnected（两个元素是否相连）：确定两个元素是否属于同一子集或者确定两个元素是否相连。</li>
+</ul>
+<h3 id="名词解释"><a href="#名词解释" class="headerlink" title="名词解释"></a>名词解释</h3><ul>
+<li>森林：由若干个大小不同的子树所表示的数据结构。</li>
+<li>连通分量：在这里简单的可以理解为并查集中集合的数量。</li>
+<li>树的大小：树的节点数量。</li>
+<li>树中某个节点的深度：该节点到树的根节点的路径上的链接数。</li>
+<li>树的高度：树中所有节点中的最大深度。</li>
+</ul>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><ul>
+<li>在社交网络中判断两个人是否属于同一个交际圈。</li>
+<li>查询网络中的两个网络节点是否相连。</li>
+<li>数学中判断两个元素是否属于同一个集合。</li>
+<li>数学中把两个不相交的子集合并成一个集合。</li>
+</ul>
+<h2 id="quick-find实现"><a href="#quick-find实现" class="headerlink" title="quick find实现"></a>quick find实现</h2><blockquote>
+<p>为每一个集合都选取一个元素做为该集合的唯一编号，如果有两个元素它们的编号相同，那么就说明它们属于同一个集合。</p>
+</blockquote>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><blockquote>
+<p>初始情况下如果有<code>N</code>个元素，我们认为这个<code>N</code>个元素之间都是相互独立的，也就是一共有<code>N</code>个集合，每个集合只有一个元素。使用一个数组来存储每个集合的编号，每个集合的编号只需要保证不重复即可。可以循环<code>N次</code>为每个集合从<code>0到N-1</code>编号。</p>
+</blockquote>
+<p>每个集合在初始情况下只包含一个元素：</p>
+<p><img src="https://image.coder.cat/unionfind1.png"></p>
+<p>下图是初始化时在数组中的存储结构，<code>element</code>是集合中的每个元素，也就是用数组索引来表示元素，<code>id</code>为每个元素对应的<code>集合编号</code>：</p>
+<p><img src="https://image.coder.cat/unionfind14.png"></p>
+<p>代码实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UnionFind</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">// 并查集中的元素个数</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> elementNum = <span class="number">0</span>;</span><br><span class="line">   <span class="comment">// 联通分量，也是集合的数量</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> connectedComponent = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 存储每个集合的编号</span></span><br><span class="line">    <span class="keyword">int</span> *ids;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    UnionFind(<span class="keyword">unsigned</span> <span class="keyword">int</span> elementNum) &#123;</span><br><span class="line">        <span class="keyword">this</span>-&gt;elementNum = elementNum;</span><br><span class="line">        <span class="comment">// 初始情况下联通分量为元素个数</span></span><br><span class="line">        <span class="keyword">this</span>-&gt;connectedComponent = elementNum;</span><br><span class="line">        <span class="keyword">this</span>-&gt;ids = <span class="keyword">new</span> <span class="keyword">int</span>[elementNum];</span><br><span class="line">        <span class="comment">// 初始化每个集合的编号为0至size-1</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; elementNum; i++) &#123;</span><br><span class="line">            <span class="keyword">this</span>-&gt;ids[i] = i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="查询"><a href="#查询" class="headerlink" title="查询"></a>查询</h3><blockquote>
+<p>查询一个元素属于哪个集合，只需要查看这个元素的<code>id</code>。这也是为什么叫<code>quick find</code>，因为查询操作只需要<code>O(1)</code>的时间复杂度。</p>
+</blockquote>
+<p>下图中<code>0,1,2</code>这三个元素的<code>id</code>都是0，元素<code>3</code>和元素<code>4</code>的<code>id</code>分别是3和4，所以表示的就是3个集合。</p>
+<p><img src="https://image.coder.cat/unionfind2.png"></p>
+<p>对应在数组中的存储结构：</p>
+<p><img src="https://image.coder.cat/unionfind15.png"></p>
+<p>代码实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">find</span><span class="params">(element)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">this</span>-&gt;ids[element];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="两个元素是否相连"><a href="#两个元素是否相连" class="headerlink" title="两个元素是否相连"></a>两个元素是否相连</h3><blockquote>
+<p>判断两个元素是否属于同一个集合时，只需要对比两个元素的<code>id</code>是否相等即可。</p>
+</blockquote>
+<p>下图中<code>0,1,2</code>这三个元素的<code>id</code>都是0，所以它们是相连的。节点<code>3</code>和元素<code>0,1,2</code>都不相连，因为它们<code>id</code>不同。</p>
+<p><img src="https://image.coder.cat/unionfind2.png"></p>
+<p>对应在数组中的存储结构：</p>
+<p><img src="https://image.coder.cat/unionfind15.png"></p>
+<p>代码实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">isConnected</span><span class="params">(<span class="keyword">int</span> p ,<span class="keyword">int</span> q)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>-&gt;find( p) == <span class="keyword">this</span>-&gt;find(q); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="合并"><a href="#合并" class="headerlink" title="合并"></a>合并</h3><blockquote>
+<p>合并两个集合时，只需要把任意其中一个集合中的所有元素的<code>id</code>修改成另外一个集合的<code>id</code>即可，这样一来原先的两个集合都指向了同一个<code>id</code>，就完成了合并操作。</p>
+</blockquote>
+<p><img src="https://image.coder.cat/unionfind2.png"></p>
+<p>对应在数组中的存储结构：</p>
+<p><img src="https://image.coder.cat/unionfind15.png"></p>
+<p>如果我们需要把上图中元素<code>3</code>和元素<code>2</code>合并，就有两个办法分别是：</p>
+<ul>
+<li><p>把元素<code>2</code>所在的集合的所有元素的<code>id</code>修改成元素<code>3</code>所在集合的<code>id</code>。</p>
+<p><img src="https://image.coder.cat/unionfind3.png"></p>
+<p>对应在数组中的存储结构：</p>
+<p><img src="https://image.coder.cat/unionfind16.png"></p>
+</li>
+<li><p>把元素<code>3</code>所在的集合的所有元素修改成元素<code>2</code>所在集合的<code>id</code>。</p>
+</li>
+</ul>
+<p><img src="https://image.coder.cat/unionfind4.png"></p>
+<p>对应在数组中的存储结构：</p>
+<p><img src="https://image.coder.cat/unionfind17.png"></p>
+<p>不管选择哪一种方法最终所表示的集合都是等价的，所以两种方法都可以。</p>
+<p>代码实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">unionElement</span><span class="params">(<span class="keyword">int</span> p, <span class="keyword">int</span> q)</span> </span>&#123;</span><br><span class="line">  	<span class="keyword">int</span> pId = <span class="keyword">this</span>-&gt;find(p);</span><br><span class="line">    <span class="keyword">int</span> qId = <span class="keyword">this</span>-&gt;find(q);</span><br><span class="line">    <span class="comment">// 如果p和q本来就相连就不需要合并</span></span><br><span class="line">    <span class="keyword">if</span> (pId == qId) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>-&gt;size; i ++) &#123;</span><br><span class="line">        <span class="comment">// 把其中一个集合中的所有元素的id修改成另外一个集合的id</span></span><br><span class="line">        <span class="keyword">if</span>  (<span class="keyword">this</span>-&gt;id[i] == pId) &#123;</span><br><span class="line">            <span class="keyword">this</span>-&gt;ids[i] = qId;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 合并之后少了一个集合，connectedComponent就应该-1</span></span><br><span class="line">    <span class="keyword">this</span>-&gt;connectedComponent --;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p><code>quick find</code>这种实现方式，它的优点在于可以快速的查询元素属于哪一个集合。缺点是在每次做<code>合并</code>的时候都需要遍历整个<code>ids</code>数组然后去修改其中一个集合的所有元素的<code>id</code>，这样就会导致合并操作在数据量大的时候时间复杂度很高。</p>
+<h2 id="quick-union实现"><a href="#quick-union实现" class="headerlink" title="quick union实现"></a>quick union实现</h2><blockquote>
+<p>把每个元素看成一个<code>节点</code>，每个节点<code>指向该节点的父节点</code>。这一点跟传统的树行结构不太一样，传统的树行结构是节点指向该节点的孩子节点。并查集中的每棵树都表示一个<code>集合</code>，整个并查集所表示的就是一个<code>森林</code>。每棵树会选取一个节点作为代表，用来代表这棵树所表示的集合，这个代表节点也是树的根节点。如果两个元素的根节点相同则它们属于同一棵树也就是属于同一个集合。</p>
+</blockquote>
+<h3 id="初始化-1"><a href="#初始化-1" class="headerlink" title="初始化"></a>初始化</h3><blockquote>
+<p>初始情况下，我们还是认为每个<code>元素（节点）</code>之间相互独立，每棵树只有一个根节点就是其本身，这个根节点用来代表这棵树所表示的集合。定义一个叫做<code>parents</code>的数组用来存储每个节点的父节点。</p>
+</blockquote>
+<p>每个集合在初始情况下的<code>父节点</code>指向其自身：</p>
+<p><img src="https://image.coder.cat/unionfind1.png"></p>
+<p>下图是初始化时在数组中的存储结构，<code>element</code>是集合中的每个元素，也就是用数组索引来表示元素，<code>parent</code>为每个元素对应的<code>父节点</code>：</p>
+<p><img src="https://image.coder.cat/unionfind18.png"></p>
+<p>代码实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UnionFind</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">// 并查集中的元素个数</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> elementNum = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 联通分量，也是集合的数量</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> connectedComponent = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 存储每个节点的父节点</span></span><br><span class="line">    <span class="keyword">int</span> *parents;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    UnionFind(<span class="keyword">unsigned</span> <span class="keyword">int</span> elementNum) &#123;</span><br><span class="line">        <span class="keyword">this</span>-&gt;elementNum = elementNum;</span><br><span class="line">        <span class="comment">// 初始情况下联通分量为元素个数</span></span><br><span class="line">        <span class="keyword">this</span>-&gt;connectedComponent = elementNum;</span><br><span class="line">        <span class="keyword">this</span>-&gt;parents = <span class="keyword">new</span> <span class="keyword">int</span>[elementNum];</span><br><span class="line">        <span class="comment">// 初始化每个节点的父节点是其本身</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; elementNum; i++) &#123;</span><br><span class="line">            <span class="keyword">this</span>-&gt;parents[i] = i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="查询-1"><a href="#查询-1" class="headerlink" title="查询"></a>查询</h3><blockquote>
+<p>查询一个元素属于哪个集合，只需要查看该元素所在树的根节点的那个元素是谁，就属于哪个集合。</p>
+</blockquote>
+<p>下图中<code>0,1,2,3</code>这四个元素的<code>根节点</code>都是0，<code>元素3</code>的<code>根节点</code>是3。整个并查集是由两棵树组成的一个森林。</p>
+<p><img src="https://image.coder.cat/unionfind5.png"></p>
+<p>在数组中的存储结构：</p>
+<p><img src="https://image.coder.cat/unionfind19.png"></p>
+<p>如果要查询某个<code>元素</code>属于哪一个集合就需要在数组中递归去寻找树的根节点，直到找到某个节点的父节点是其本身的一个节点，这个节点就是树的根节点。</p>
+<p>递归实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">find</span><span class="params">(element)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> parent = parents[element];</span><br><span class="line">    <span class="comment">// 如果某个节点的父节点是其本身的一个节点，那么就是一个根节点</span></span><br><span class="line">    <span class="keyword">if</span> (parent == element) &#123;</span><br><span class="line">        <span class="keyword">return</span> parent;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 继续递归查询</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>-&gt;find(parent);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>循环实现：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">find</span><span class="params">(element)</span> </span>&#123;</span><br><span class="line">  	<span class="keyword">while</span> (parents[element]  != element) &#123;</span><br><span class="line">       element =  parents[element];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> element;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="两个元素是否相连-1"><a href="#两个元素是否相连-1" class="headerlink" title="两个元素是否相连"></a>两个元素是否相连</h3><blockquote>
+<p>判断两个元素是否属于同一个集合时，只需要对比两个元素所在树的根节点是否是否是同一个节点即可。</p>
+</blockquote>
+<p>下图中<code>0,1,2,3</code>这四个元素的<code>根节点</code>都是0，证明它们属于同一棵树且相连。元素<code>3</code>的<code>根节点</code>是3。所以节点<code>3</code>和元素<code>0,1,2,3</code>都不相连，因为它们的根节点不同。</p>
+<p><img src="https://image.coder.cat/unionfind5.png"></p>
+<p>代码实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">isConnected</span><span class="params">(<span class="keyword">int</span> p ,<span class="keyword">int</span> q)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>-&gt;find( p) == <span class="keyword">this</span>-&gt;find(q); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="合并-1"><a href="#合并-1" class="headerlink" title="合并"></a>合并</h3><blockquote>
+<p>合并两个集合时，只需要把其中任意一颗树的根节点的父节点修改成另一个颗树的根节点，这样一来原先两颗树的根节点都是同一个节点，就完成了合并操作。</p>
+</blockquote>
+<p>下图中有两个集合，包含的元素分别是<code>0,1,2,3</code>和<code>4,5,6</code>。对应的两棵树的根节点分别是<code>0</code>和<code>4</code>。当合并这两个集合时，我们可以把这两棵树中的任意一棵树的根节点的父节点修改成另一棵树的根节点就可以完成合并操作。</p>
+<p><img src="https://image.coder.cat/unionfind6.png"></p>
+<p>我们把根节点为<code>4</code>的这棵树的根节点的父节点修改成<code>0</code>，就合并成了一个集合。树的形状也就变成了下面这个样子：</p>
+<p><img src="https://image.coder.cat/unionfind7.png"></p>
+<p>代码实现：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">unionElement</span><span class="params">(<span class="keyword">int</span> p, <span class="keyword">int</span> q)</span>  </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> pRoot = <span class="keyword">this</span>-&gt;find(p);</span><br><span class="line">    <span class="keyword">int</span> qRoot = <span class="keyword">this</span>-&gt;find(q);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 如果两个元素的根节点相同，则代表它们属于同一个集合，就不再需要合并</span></span><br><span class="line">    <span class="keyword">if</span> ( pRoot == qRoot )  &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 修改其中一棵树根节点的父节点</span></span><br><span class="line">    <span class="keyword">this</span>-&gt;parents[qRoot] = pRoot;</span><br><span class="line">   <span class="comment">// 合并之后少了一个集合，connectedComponent就应该-1</span></span><br><span class="line">	<span class="keyword">this</span>-&gt;connectedComponent --;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="加权quick-union"><a href="#加权quick-union" class="headerlink" title="加权quick union"></a>加权quick union</h2><h3 id="树的深度"><a href="#树的深度" class="headerlink" title="树的深度"></a>树的深度</h3><p>下图中两棵树所表示的集合相同，都分别表示的是拥有<code>0,1,2,3,4</code>这5个元素的一个集合。</p>
+<p><img src="https://image.coder.cat/unionfind8.png"></p>
+<p>左边树中节点<code>4</code>的深度为<code>3</code>，而右边树中节点<code>4</code>的深度则为<code>1</code>。通过<code>quick union</code>的<code>find</code>的实现可以知道，当在左边树中执行<code>find(4)</code>时需要的<code>时间复杂度</code>是要高于右边树中执行<code>find(4)</code>的，因为。所以得出一个结论就是：<code>quick union</code>中的<code>find</code>操作的<code>时间复杂度</code>是跟要查找节点在树中的深度相关的。<code>find</code>操作需要一直向上寻找根节点，如果要查找的节点在树中深度很深，那么需要寻找根节点的次数也就会越多。</p>
+<h3 id="优化思路"><a href="#优化思路" class="headerlink" title="优化思路"></a>优化思路</h3><p>由于在<code>quick union</code>中对两个集合进行<code>union</code>操作时，不管是哪棵树的根节点的父节点修改成另外一棵树的根节点最终所得到的新树所表示的集合都是等价的。</p>
+<p>所以我们可以在<code>union</code>操作时把树的<code>高度较小</code>的那棵树的根节点的父节点修改成树的<code>高度较大</code>的那颗树的根节点，在两棵树的高度相等时，就跟先前一样不管是哪棵树的根节点的父节点修改成另外一棵树的根节点最终所得到的新树所表示的集合和新树的高度都是一样的。</p>
+<h3 id="优化思路证明"><a href="#优化思路证明" class="headerlink" title="优化思路证明"></a>优化思路证明</h3><p>存在两颗树分别是<code>A</code>和<code>B</code>，它们树的高度分别是<code>Ah</code>和<code>Bh</code>且<code>Ah &lt;Bh</code>。我们有两种办法可以来完成<code>union</code>操作，分别是：</p>
+<ul>
+<li><p>树<code>A</code>的根节点的父节点修改成树<code>B</code>的根节点（优化思路）</p>
+<p>修改之后由于在原来树<code>A</code>的根节点新增了一个节点，所以在新的树中原来树<code>A</code>的高度为<code>Ah+1</code>。由于<code>Ah &lt;Bh</code>，所以<code>Ah+1&lt;=Bh</code>。得到新树的最大深度为<code>Bh</code>。</p>
+</li>
+<li><p>树<code>B</code>的根节点的父节点修改成树<code>A</code>的根节点</p>
+<p>修改之后由于在原来树<code>B</code>的根节点新增了一个节点，所以在新的树中原来树<code>B</code>的高度为<code>Bh+1</code>。由于<code>Ah &lt;Bh</code>，所以<code>Ah&lt;Bh+1</code>。得到新树的最大深度为<code>Bh+1</code>。</p>
+</li>
+</ul>
+<p>得到结果<code>Bh&lt;Bh+1</code>就可以证明我们的优化思路是可以降低节点在树中的深度的。</p>
+<h3 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h3><blockquote>
+<p> 初始化的时候跟<code>quick union</code>一样，只是多了数组用来存放每个节点的深度，我们定义这个数组叫<code>ranks</code>。初始化情况下我们让每个节点在树中的深度为<code>1</code>。<code>find</code>和<code>isConnected</code>的实现跟之前的<code>quick union</code>一样。</p>
+</blockquote>
+<p>代码实现：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UnionFind</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">// 并查集中的元素个数</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> elementNum = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 联通分量，也是集合的数量</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> connectedComponent = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 存储每个节点的父节点</span></span><br><span class="line">    <span class="keyword">int</span> *parents;</span><br><span class="line">    <span class="comment">// 记录每个根节点所在树的深度</span></span><br><span class="line">    <span class="keyword">int</span> *ranks;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    UnionFind(<span class="keyword">unsigned</span> <span class="keyword">int</span> elementNum) &#123;</span><br><span class="line">        <span class="keyword">this</span>-&gt;elementNum = elementNum;</span><br><span class="line">        <span class="comment">// 初始情况下联通分量为元素个数</span></span><br><span class="line">        <span class="keyword">this</span>-&gt;connectedComponent = elementNum;</span><br><span class="line">        <span class="keyword">this</span>-&gt;parents = <span class="keyword">new</span> <span class="keyword">int</span>[elementNum];</span><br><span class="line">        <span class="keyword">this</span>-&gt;ranks = <span class="keyword">new</span> <span class="keyword">int</span>[elementNum];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; elementNum; i++) &#123;</span><br><span class="line">            <span class="comment">// 初始化每个节点的父节点是其本身</span></span><br><span class="line">            <span class="keyword">this</span>-&gt;parents[i] = i;</span><br><span class="line">            <span class="keyword">this</span>-&gt;ranks[i] = <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 合并元素</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">unionElement</span><span class="params">(<span class="keyword">int</span> p, <span class="keyword">int</span> q)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> pRoot = <span class="keyword">this</span>-&gt;find(p);</span><br><span class="line">        <span class="keyword">int</span> qRoot = <span class="keyword">this</span>-&gt;find(q);</span><br><span class="line">        <span class="comment">// 如果两个元素的根节点相同，则代表它们属于同一个集合，就不再需要合并</span></span><br><span class="line">        <span class="keyword">if</span> (pRoot == qRoot) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">int</span> pRank = <span class="keyword">this</span>-&gt;ranks[pRoot];</span><br><span class="line">        <span class="keyword">int</span> qRank = <span class="keyword">this</span>-&gt;ranks[qRoot];</span><br><span class="line">        <span class="comment">// 把深度低的树的根节点指向深度高的树的根节点。</span></span><br><span class="line">        <span class="keyword">if</span> (pRank &gt; qRank) &#123;</span><br><span class="line">            <span class="keyword">this</span>-&gt;parents[qRoot] = pRoot;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pRank &lt; qRank) &#123;</span><br><span class="line">            <span class="keyword">this</span>-&gt;parents[pRoot] = qRoot;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">this</span>-&gt;parents[pRoot] = qRoot;</span><br><span class="line">            <span class="keyword">this</span>-&gt;ranks[qRoot]++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 合并之后少了一个集合，connectedComponent就应该-1</span></span><br><span class="line">        <span class="keyword">this</span>-&gt;connectedComponent --;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="路径压缩"><a href="#路径压缩" class="headerlink" title="路径压缩"></a>路径压缩</h2><h3 id="最优树结构"><a href="#最优树结构" class="headerlink" title="最优树结构"></a>最优树结构</h3><p>通过我们优化之后的<code>加权quick union</code>还是没有达到我们最优树结构。下图的两棵树都表示的是两个相同的集合。左边树中的每个节点与根节点的距离<code>大于等于1</code>。右边树中的每个节点与根节点的距离<code>等于1</code>，也就是我们想要的最优树结构。</p>
+<p><img src="https://image.coder.cat/unionfind8.png"></p>
+<p>我们需要一个算法要压缩路径使得树中的每个节点与根节点的距离为<code>1</code>。</p>
+<h3 id="路径压缩思路"><a href="#路径压缩思路" class="headerlink" title="路径压缩思路"></a>路径压缩思路</h3><blockquote>
+<p>把某个节点的父节点修改成该节点<code>父节点的父节点</code>，一直向上对这条<code>链接</code>上的每个节点做相同的操作直到遇到根节点终止，就可以压缩每个节点到根节点的距离。</p>
+</blockquote>
+<h3 id="路径压缩过程演示"><a href="#路径压缩过程演示" class="headerlink" title="路径压缩过程演示"></a>路径压缩过程演示</h3><p>左边树中节点<code>4</code>的父节点的父节点是<code>2</code>，所以把左边树中节点<code>4</code>的父节点修改成<code>2</code>，得到右边的树：</p>
+<p><img src="https://image.coder.cat/unionfind9.png"></p>
+<p>左边树中节点<code>4</code>的父节点的父节点是<code>0</code>，所以把左边树中节点<code>4</code>的父节点修改成<code>0</code>，得到右边的树：</p>
+<p><img src="https://image.coder.cat/unionfind10.png"></p>
+<p>左边树中节点<code>3</code>的父节点的父节点是<code>0</code>，所以最后把左边树中节点<code>3</code>的父节点修改成<code>0</code>，就得到右边的树：</p>
+<p><img src="https://image.coder.cat/unionfind11.png"></p>
+<p>这样一番操作之后最终得到结果就是我们想要的树结构。</p>
+<h3 id="具体实现-1"><a href="#具体实现-1" class="headerlink" title="具体实现"></a>具体实现</h3><blockquote>
+<p>由于路径压缩的过程跟<code>find</code>操作有些类似，都是向上寻找节点，且都是遇到根节点终止，所以把路径压缩的过程就直接放在了<code>find</code>操作中。<code>union</code>操作不需要做任何改动。</p>
+</blockquote>
+<p>find代码实现：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">find</span><span class="params">(<span class="keyword">int</span> element)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> parent = parents[element];</span><br><span class="line">    <span class="keyword">if</span> (parent == element) &#123;</span><br><span class="line">        <span class="keyword">return</span> parent;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 路径压缩，parents[parent]得到的就是当前节点父节点的父节点</span></span><br><span class="line">    parents[element] = parents[parent];</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>-&gt;find(parents[element]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="源代码"><a href="#源代码" class="headerlink" title="源代码"></a>源代码</h2><p>具体实现：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/acodercat/cpp-algorithms/blob/master/include/union_find.h">https://github.com/acodercat/cpp-algorithms/blob/master/include/union_find.h</a></p>
+<p>调用样例：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/acodercat/cpp-algorithms/blob/master/src/examples/union_find.cpp">https://github.com/acodercat/cpp-algorithms/blob/master/src/examples/union_find.cpp</a></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89"><span class="toc-number">1.1.</span> <span class="toc-text">定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-number">1.2.</span> <span class="toc-text">基本操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A"><span class="toc-number">1.3.</span> <span class="toc-text">名词解释</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%94%E7%94%A8"><span class="toc-number">1.4.</span> <span class="toc-text">应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#quick-find%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.</span> <span class="toc-text">quick find实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">2.1.</span> <span class="toc-text">初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2"><span class="toc-number">2.2.</span> <span class="toc-text">查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E5%85%83%E7%B4%A0%E6%98%AF%E5%90%A6%E7%9B%B8%E8%BF%9E"><span class="toc-number">2.3.</span> <span class="toc-text">两个元素是否相连</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%88%E5%B9%B6"><span class="toc-number">2.4.</span> <span class="toc-text">合并</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#quick-union%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.</span> <span class="toc-text">quick union实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96-1"><span class="toc-number">3.1.</span> <span class="toc-text">初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2-1"><span class="toc-number">3.2.</span> <span class="toc-text">查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E5%85%83%E7%B4%A0%E6%98%AF%E5%90%A6%E7%9B%B8%E8%BF%9E-1"><span class="toc-number">3.3.</span> <span class="toc-text">两个元素是否相连</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%88%E5%B9%B6-1"><span class="toc-number">3.4.</span> <span class="toc-text">合并</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A0%E6%9D%83quick-union"><span class="toc-number">4.</span> <span class="toc-text">加权quick union</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%91%E7%9A%84%E6%B7%B1%E5%BA%A6"><span class="toc-number">4.1.</span> <span class="toc-text">树的深度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E6%80%9D%E8%B7%AF"><span class="toc-number">4.2.</span> <span class="toc-text">优化思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E6%80%9D%E8%B7%AF%E8%AF%81%E6%98%8E"><span class="toc-number">4.3.</span> <span class="toc-text">优化思路证明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="toc-number">4.4.</span> <span class="toc-text">具体实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E5%8E%8B%E7%BC%A9"><span class="toc-number">5.</span> <span class="toc-text">路径压缩</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E4%BC%98%E6%A0%91%E7%BB%93%E6%9E%84"><span class="toc-number">5.1.</span> <span class="toc-text">最优树结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E5%8E%8B%E7%BC%A9%E6%80%9D%E8%B7%AF"><span class="toc-number">5.2.</span> <span class="toc-text">路径压缩思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E5%8E%8B%E7%BC%A9%E8%BF%87%E7%A8%8B%E6%BC%94%E7%A4%BA"><span class="toc-number">5.3.</span> <span class="toc-text">路径压缩过程演示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0-1"><span class="toc-number">5.4.</span> <span class="toc-text">具体实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BA%90%E4%BB%A3%E7%A0%81"><span class="toc-number">6.</span> <span class="toc-text">源代码</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2019/08/30/union-find/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2019/08/30/union-find/&text=图解数据结构-并查集"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2019/08/30/union-find/&title=图解数据结构-并查集"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2019/08/30/union-find/&is_video=false&description=图解数据结构-并查集"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=图解数据结构-并查集&body=Check out this article: http://coder.cat/2019/08/30/union-find/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2019/08/30/union-find/&title=图解数据结构-并查集"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2019/08/30/union-find/&title=图解数据结构-并查集"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2019/08/30/union-find/&title=图解数据结构-并查集"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2019/08/30/union-find/&title=图解数据结构-并查集"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2019/08/30/union-find/&name=图解数据结构-并查集&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2019/08/30/union-find/&t=图解数据结构-并查集"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2018-2020
+    CoderCat
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+
+    <!-- jquery -->
+
+<script src="/lib/jquery/jquery.min.js"></script>
+
+
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+
+<!-- clipboard -->
+
+  
+<script src="/lib/clipboard/clipboard.min.js"></script>
+
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="我们通过把一段具有函数调用的C语言代码编译成汇编，逐步分析函数栈帧生命周期的完整变化过程。  有如下C语言代码： 12345678910long callee(long arg1, long arg2, long arg3, long arg4, long arg5, long arg6, long arg7, long arg8) &amp;#123;    return arg7 + arg8;&amp;#">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分析一个C语言函数栈帧实例">
+<meta property="og:url" content="http://coder.cat/2020/10/03/c-stack-frame-example/index.html">
+<meta property="og:site_name" content="CoderCat&#39;s Blog">
+<meta property="og:description" content="我们通过把一段具有函数调用的C语言代码编译成汇编，逐步分析函数栈帧生命周期的完整变化过程。  有如下C语言代码： 12345678910long callee(long arg1, long arg2, long arg3, long arg4, long arg5, long arg6, long arg7, long arg8) &amp;#123;    return arg7 + arg8;&amp;#">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://image.coder.cat/stack22.png">
+<meta property="og:image" content="https://image.coder.cat/stack23.png">
+<meta property="og:image" content="https://image.coder.cat/stack24.png">
+<meta property="og:image" content="https://image.coder.cat/stack25.png">
+<meta property="og:image" content="https://image.coder.cat/stack26.png">
+<meta property="og:image" content="https://image.coder.cat/stack27.png">
+<meta property="og:image" content="https://image.coder.cat/stack28.png">
+<meta property="article:published_time" content="2020-10-03T03:06:27.000Z">
+<meta property="article:modified_time" content="2020-12-29T08:27:13.046Z">
+<meta property="article:author" content="CoderCat">
+<meta property="article:tag" content="Computer science">
+<meta property="article:tag" content="C">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.coder.cat/stack22.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>分析一个C语言函数栈帧实例</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+      
+<link rel="stylesheet" href="/css/rtl.css">
+
+    
+    <!-- rss -->
+    
+    
+      <link rel="alternate" href="/true" title="CoderCat&#39;s Blog" type="application/atom+xml" />
+    
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2020/12/29/function-call-principle/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" href="/2020/09/19/representation-of-integers-in-computers/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2020/10/03/c-stack-frame-example/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/10/03/c-stack-frame-example/&text=分析一个C语言函数栈帧实例"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/10/03/c-stack-frame-example/&is_video=false&description=分析一个C语言函数栈帧实例"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=分析一个C语言函数栈帧实例&body=Check out this article: http://coder.cat/2020/10/03/c-stack-frame-example/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/10/03/c-stack-frame-example/&name=分析一个C语言函数栈帧实例&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/10/03/c-stack-frame-example/&t=分析一个C语言函数栈帧实例"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        分析一个C语言函数栈帧实例
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">CoderCat</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-10-03T03:06:27.000Z" itemprop="datePublished">2020-10-03</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/C/">C</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/C/" rel="tag">C</a>, <a class="tag-link-link" href="/tags/Computer-science/" rel="tag">Computer science</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <blockquote>
+<p>我们通过把一段具有函数调用的C语言代码编译成汇编，逐步分析函数栈帧生命周期的完整变化过程。</p>
+</blockquote>
+<p>有如下C语言代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">callee</span><span class="params">(<span class="keyword">long</span> arg1, <span class="keyword">long</span> arg2, <span class="keyword">long</span> arg3, <span class="keyword">long</span> arg4, <span class="keyword">long</span> arg5, <span class="keyword">long</span> arg6, <span class="keyword">long</span> arg7, <span class="keyword">long</span> arg8)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> arg7 + arg8;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> a = <span class="number">7</span>;</span><br><span class="line">    <span class="keyword">long</span> b = <span class="number">8</span>;</span><br><span class="line">    callee(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span> ,<span class="number">5</span> ,<span class="number">6</span>, a, b);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码中<code>callee</code>函数有8个参数分别是<code>arg1~arg8</code>，它返回<code>arg7</code>和<code>arg8</code>相加后的结果。由于我们的代码是运行在<code>X64</code>的机器上，所以<code>arg1~arg6</code>会通过寄存器来传递，<code>arg7</code>和<code>arg8</code>通过栈来传递。<code>main</code>中定义了两个局部变量<code>a</code>和<code>b</code>，它对<code>callee</code>发起调用，局部变量<code>a,b</code>分别对应<code>callee</code>函数的<code>arg7,arg8</code>。</p>
+<p>将上面C语言代码编译成汇编，把由编译器产生的其他与我们分析函数栈帧不相关的指令删除，得到如下指令（根据编译器版本以及操作系统的不同编译出的汇编指令会有所差异，这里使用的编译器和操作系统分别是<code>gcc9.0</code>和<code>ubuntu 20.04 x-64</code>）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">callee:</span><br><span class="line">    pushq	%rbp</span><br><span class="line">    movq	%rsp, %rbp</span><br><span class="line">    movq	%rdi, -8(%rbp)</span><br><span class="line">    movq	%rsi, -16(%rbp)</span><br><span class="line">    movq	%rdx, -24(%rbp)</span><br><span class="line">    movq	%rcx, -32(%rbp)</span><br><span class="line">    movq	%r8, -40(%rbp)</span><br><span class="line">    movq	%r9, -48(%rbp)</span><br><span class="line">    movq	16(%rbp), %rdx</span><br><span class="line">    movq	24(%rbp), %rax</span><br><span class="line">    addq	%rdx, %rax</span><br><span class="line">    popq	%rbp</span><br><span class="line">    ret</span><br><span class="line">main:</span><br><span class="line">    pushq	%rbp</span><br><span class="line">    movq	%rsp, %rbp</span><br><span class="line">    subq	$16, %rsp</span><br><span class="line">    movq	$7, -16(%rbp)</span><br><span class="line">    movq	$8, -8(%rbp)</span><br><span class="line">    pushq	-8(%rbp)</span><br><span class="line">    pushq	-16(%rbp)</span><br><span class="line">    movl	$6, %r9d</span><br><span class="line">    movl	$5, %r8d</span><br><span class="line">    movl	$4, %ecx</span><br><span class="line">    movl	$3, %edx</span><br><span class="line">    movl	$2, %esi</span><br><span class="line">    movl	$1, %edi</span><br><span class="line">    call	callee</span><br><span class="line">    addq	$16, %rsp</span><br><span class="line">    movl	$0, %eax</span><br><span class="line">    leave</span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+<p>指令中的<code>callee:</code>和<code>main:</code>表示的是为它下面的指令取一个名字，可以理解为函数名。</p>
+<p><strong>在<code>X64</code>中<code>栈指针</code>和<code>栈基址</code>分别叫<code>rsp,rbp</code>。</strong></p>
+<p>我们逐步分析这些指令对堆栈的影响，首先是<code>main</code>的第前两行指令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pushq	%rbp</span><br><span class="line">movq	%rsp, %rbp</span><br></pre></td></tr></table></figure>
+<p>实际上<code>main</code>函数是被系统内一个叫做<code>_start</code>的函数所调用，所以第1条指令将<code>调用者</code>_start的<code>栈基址</code>压栈保存，第2条指令移动<code>栈基址</code>使它指向和<code>栈指针</code>同样的位置。</p>
+<p>栈变化过程（在一开始我们<code>栈指针</code>和<code>栈基址</code>指向<code>_start</code>的栈帧，这里没有画出<code>_start</code>的栈帧也就没有标注它们）：</p>
+<p><img src="https://image.coder.cat/stack22.png"></p>
+<p>初始化局部变量并准备<code>callee</code>的后两个参数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">subq	$16, %rsp</span><br><span class="line">movq	$7, -16(%rbp)</span><br><span class="line">movq	$8, -8(%rbp)</span><br><span class="line">pushq	-8(%rbp)</span><br><span class="line">pushq	-16(%rbp)</span><br></pre></td></tr></table></figure>
+<p>第1条指令中的<code>subq</code>是减法指令，这里用于把<code>栈指针</code>减去16，使它向低地址移动来给局部变量<code>a,b</code>分配16字节的空间（long占8个字节）。</p>
+<p>第2~3条指令中的<code>movq</code>是数据移动指令，在这里它通过对<code>栈基址</code>进行适当偏移来对<code>a,b</code>赋值。例如<code>movq $7, -16(%rbp)</code>表示把7放到相对于<code>栈基址</code>-16的内存中。下图中可以看到这两条指令执行完以后<code>-16</code>和<code>-8</code>的位置刚好放置了变量<code>a,b</code>。</p>
+<p>第4~5条指令把栈帧中<code>a,b</code>的值复制一份然后把它们压栈，这是为了准备函数<code>callee</code>的后2个参数<code>arg7</code>与<code>arg8</code>。</p>
+<p>栈变化过程（图中右侧的数字表示基于<code>栈基址</code>的偏移量，每个格子8字节，由于栈空间是向低地址发展的，所以相对于<code>栈基址</code>上面内存的偏移量是负的）：</p>
+<p><img src="https://image.coder.cat/stack23.png"></p>
+<p>把<code>callee</code>的前6个参数<code>arg1~arg6</code>存放在寄存器中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">movl	$6, %r9d</span><br><span class="line">movl	$5, %r8d</span><br><span class="line">movl	$4, %ecx</span><br><span class="line">movl	$3, %edx</span><br><span class="line">movl	$2, %esi</span><br><span class="line">movl	$1, %edi</span><br></pre></td></tr></table></figure>
+
+<p>开始调用<code>callee</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">call	callee</span><br></pre></td></tr></table></figure>
+<p>这条指令对应了两个操作，首先将它下面一条指令的地址也就是<code>addq $16, %rsp</code>的地址（返回地址）压入栈中，随后修改<code>程序计数器</code>（PC）为<code>callee</code>的第一条指令的地址，最后CPU就从<code>callee</code>处开始执行。</p>
+<p>这条指令执行后的栈：</p>
+<p><img src="https://image.coder.cat/stack24.png"></p>
+<p>现在CPU从<code>callee</code>开始执行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pushq	%rbp</span><br><span class="line">movq	%rsp, %rbp</span><br></pre></td></tr></table></figure>
+<p>先压入<code>main</code>栈帧的<code>栈基址</code>，然后移动<code>栈基址</code>使它指向和<code>栈指针</code>同样的位置。此时产生了<code>callee</code>的栈帧：</p>
+<p>第2条指令使<code>栈基址</code>发生了改变，相应的右图中基于<code>栈基址</code>的偏移量也需要发生变化（由于栈空间是向低地址发展的，所以相对于<code>栈基址</code>下面内存的偏移量是正的）：</p>
+<p><img src="https://image.coder.cat/stack25.png"></p>
+<p>复制前6个参数到栈帧中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">movq	%rdi, -8(%rbp)</span><br><span class="line">movq	%rsi, -16(%rbp)</span><br><span class="line">movq	%rdx, -24(%rbp)</span><br><span class="line">movq	%rcx, -32(%rbp)</span><br><span class="line">movq	%r8, -40(%rbp)</span><br><span class="line">movq	%r9, -48(%rbp)</span><br></pre></td></tr></table></figure>
+<p>这6个寄存器<code>rdi,rsi,rdx,rcx,r8,r9</code>分别存放了<code>callee</code>的前6个参数，现在将它们从寄存器中复制到<code>callee</code>自己的栈帧中。我对这个操作有点迷，为啥还需要复制呢，直接从寄存器中取出来使用不就行了吗？我想可能是为了腾出寄存器吧。</p>
+<p>执行之后的栈结构：</p>
+<p><img src="https://image.coder.cat/stack26.png"></p>
+<p>执行到这里奇怪的事情发生了，<code>栈指针</code>并没有继续向低地址移动，让它指向栈顶的位置。其实这里是编译器的优化，<code>栈指针</code>的目的是为了确定被调用函数的<code>栈基址</code>，由于<code>callee</code>没有再继续调用其他任何函数，因此也无需修改<code>栈指针</code>。</p>
+<p>执行相加：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">movq    16(%rbp), %rdx</span><br><span class="line">movq	24(%rbp), %rax</span><br><span class="line">addq	%rdx, %rax</span><br></pre></td></tr></table></figure>
+<p>将<code>arg7</code>与<code>arg8</code>相加，然后把结果放在<code>rdx</code>寄存器，<code>mian</code>函数可以访问<code>rdx</code>寄存器来获取返回值，以此来达到函数返回值传递的目的。</p>
+<p>返回到<code>main</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">popq	%rbp</span><br><span class="line">ret</span><br></pre></td></tr></table></figure>
+<p>恢复<code>栈基址</code>并跳转到返回地址处开始继续执行。</p>
+<p>栈变化过程：</p>
+<p><img src="https://image.coder.cat/stack27.png"></p>
+<p>返回到<code>_start</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">addq	$16, %rsp</span><br><span class="line">movl	$0, %eax</span><br><span class="line">leave</span><br><span class="line">ret</span><br></pre></td></tr></table></figure>
+<p>第1条指令中的<code>addq</code>是加法指令，这里用于把<code>栈指针</code>加上16，使它向高地址移动以此来释放<code>arg7,arg8</code>的内存。通过这一步可以发现，函数执行完后会立马释放参数的栈内存。</p>
+<p>第2条指令把<code>main</code>的返回值0放入到<code>eax</code>寄存器中。</p>
+<p>第3条指令<code>leave</code>隐含执行了两个操作，它等价与下面两条指令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">movq	%rbp, %rsp</span><br><span class="line">popq	%rbp</span><br></pre></td></tr></table></figure>
+<p>先修改<code>栈指针</code>使它与<code>栈基址</code>指向同样的位置，这一步主要用于释放局部空间，然后恢复<code>栈基址</code>。此时<code>栈指针</code>和<code>栈基址</code>就分别指向了<code>_start</code>的栈帧。</p>
+<p>到这里我们发现<code>main</code>和<code>callee</code>的返回过程不一样，这是由于在<code>callee</code>一开始没有修改<code>栈基址</code>，所以返回的时候也就不需要再对它进行恢复。由此我们可以得出一个结论：如果某个函数调用了其他函数和没有调用其他函数，它们在返回时的过程有略微的不一致。</p>
+<p>第4条指令<code>ret</code>使CPU返回到<code>_start</code>中去执行，最后一切又恢复了平静。</p>
+<p>栈变化过程：</p>
+<p><img src="https://image.coder.cat/stack28.png"></p>
+<p><strong>最后我们发现数据仍然还保存在栈中，因为释放栈空间并不会修改里面的数据，只是对<code>栈指针</code>和<code>栈基址</code>做了移动。</strong></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2020/10/03/c-stack-frame-example/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/10/03/c-stack-frame-example/&text=分析一个C语言函数栈帧实例"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/10/03/c-stack-frame-example/&is_video=false&description=分析一个C语言函数栈帧实例"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=分析一个C语言函数栈帧实例&body=Check out this article: http://coder.cat/2020/10/03/c-stack-frame-example/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/10/03/c-stack-frame-example/&name=分析一个C语言函数栈帧实例&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/10/03/c-stack-frame-example/&t=分析一个C语言函数栈帧实例"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2018-2020
+    CoderCat
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+
+    <!-- jquery -->
+
+<script src="/lib/jquery/jquery.min.js"></script>
+
+
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+
+<!-- clipboard -->
+
+  
+<script src="/lib/clipboard/clipboard.min.js"></script>
+
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>

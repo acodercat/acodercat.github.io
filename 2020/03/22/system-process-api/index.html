@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="进程（Process）就是系统中运行的程序，也是系统基本的调度单元。程序最初是以某种可执行格式驻留在磁盘上的。当操作系统运行程序时需要将程序代码和静态数据加载到内存中，同时创建进程并为其分配进程所需的系统资源，如：堆栈，程序计数器，寄存器等。  下文使用C语言来对由操作系统提供的三个主要进程API进行解释。 这三个API分别是：  fork() wait() exec()  fork() 该函数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="系统进程API">
+<meta property="og:url" content="http://coder.cat/2020/03/22/system-process-api/index.html">
+<meta property="og:site_name" content="CoderCat&#39;s Blog">
+<meta property="og:description" content="进程（Process）就是系统中运行的程序，也是系统基本的调度单元。程序最初是以某种可执行格式驻留在磁盘上的。当操作系统运行程序时需要将程序代码和静态数据加载到内存中，同时创建进程并为其分配进程所需的系统资源，如：堆栈，程序计数器，寄存器等。  下文使用C语言来对由操作系统提供的三个主要进程API进行解释。 这三个API分别是：  fork() wait() exec()  fork() 该函数">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-03-22T12:20:25.000Z">
+<meta property="article:modified_time" content="2020-12-29T08:21:45.388Z">
+<meta property="article:author" content="CoderCat">
+<meta property="article:tag" content="CoderCat">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>系统进程API</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+      
+<link rel="stylesheet" href="/css/rtl.css">
+
+    
+    <!-- rss -->
+    
+    
+      <link rel="alternate" href="/true" title="CoderCat&#39;s Blog" type="application/atom+xml" />
+    
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2020/05/24/rust-life-cycle/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" href="/2020/01/17/c-implement-generic-function/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2020/03/22/system-process-api/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/03/22/system-process-api/&text=系统进程API"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/03/22/system-process-api/&title=系统进程API"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/03/22/system-process-api/&is_video=false&description=系统进程API"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=系统进程API&body=Check out this article: http://coder.cat/2020/03/22/system-process-api/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/03/22/system-process-api/&title=系统进程API"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/03/22/system-process-api/&title=系统进程API"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/03/22/system-process-api/&title=系统进程API"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/03/22/system-process-api/&title=系统进程API"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/03/22/system-process-api/&name=系统进程API&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/03/22/system-process-api/&t=系统进程API"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#fork"><span class="toc-number">1.</span> <span class="toc-text">fork()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#wait"><span class="toc-number">2.</span> <span class="toc-text">wait()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#exec"><span class="toc-number">3.</span> <span class="toc-text">exec()</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        系统进程API
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">CoderCat</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-03-22T12:20:25.000Z" itemprop="datePublished">2020-03-22</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <blockquote>
+<p>进程（Process）就是系统中运行的程序，也是系统基本的调度单元。程序最初是以某种可执行格式驻留在磁盘上的。当操作系统运行程序时需要将程序代码和静态数据加载到内存中，同时创建进程并为其分配进程所需的系统资源，如：堆栈，程序计数器，寄存器等。</p>
+</blockquote>
+<p>下文使用<code>C语言</code>来对由操作系统提供的三个主要进程API进行解释。</p>
+<p>这三个API分别是：</p>
+<ul>
+<li>fork()</li>
+<li>wait()</li>
+<li>exec()</li>
+</ul>
+<h2 id="fork"><a href="#fork" class="headerlink" title="fork()"></a>fork()</h2><blockquote>
+<p>该函数会克隆一个与当前进程几乎完全一样的子进程。也就是它会拷贝当前进程的堆栈，程序计数器，寄存器等其他内存空间然后创建一个新的进程。我们将创建出来新的进程叫做子进程，进行<code>fork()</code>调用的进程叫父进程。此时这两个进程都会从<code>fork()</code>调用的下一行代码<code>同时运行</code>。</p>
+</blockquote>
+<p><strong>函数原型：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">pid_t</span>	<span class="title">fork</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>如果子进程创建失败<code>fork()</code>返回<code>-1</code>，如果创建成功会返回两次值，分别在父进程中返回和在子进程中返回。同时这2个进程得到的是不一样的值，子进程得到的是<code>0</code>，而父进程得到的是子进程的进程标识符（PID）。该调用没有参数。</p>
+<p><strong>调用示例：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;start fork!\n&quot;</span>);</span><br><span class="line">    <span class="keyword">int</span> pid = fork();</span><br><span class="line">    <span class="keyword">if</span> (pid &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;fork failed!\n&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="number">0</span> == pid) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;this is child process\n&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;this is parent process, child process pid is %d\n&quot;</span>, pid);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第5行代码使用<code>fork()</code>创建一个子进程，一旦进程创建成功，子进程和父进程就会从第6行代码开始<code>同时运行</code>。此时变量<code>pid</code>在这两个进程中的值是不一样的，在父进程中得到的是子进程的<code>PID</code>，子进程中为0。由此我们可以通过<code>fork()</code>调用的返回值来判断当前执行的这个进程是父进程还是子进程。</p>
+<p><strong>输出结果：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">start fork!</span><br><span class="line">this is child process</span><br><span class="line">this is parent process, child process pid is 1878</span><br></pre></td></tr></table></figure>
+<h2 id="wait"><a href="#wait" class="headerlink" title="wait()"></a>wait()</h2><blockquote>
+<p>进程在正常退出或异常终止时，操作系统内核会向其父进程发送<code>SIGCHLD</code>信号。父进程可以选择调用<code>wait()</code>来捕获该信号或者选择忽略。在调用<code>wait()</code>后，父进程会进入阻塞状态，当子进程执行完毕后才继续执行父进程中的代码。<code>wait()</code>一次只能等待一个子进程，如果需要等待多个子进程，则需要对<code>wait()</code>进行多次调用。</p>
+</blockquote>
+<p><strong>函数原型</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">pid_t</span> <span class="title">wait</span><span class="params">(<span class="keyword">int</span> *status)</span></span></span><br></pre></td></tr></table></figure>
+<p>参数<code>status</code>是一个指向<code>int</code>类型的指针，系统会把子进程退出时的状态写入该指针所指向的地址空间。父进程可以根据子进程的退出状态来判断它是正常退出还是异常退出。如果不需要关注子进程的退出状态可以传入<code>NULL</code>。如果<code>wait()</code>调用成功返回子进程的<code>PID</code>，调用失败返回<code>-1</code>。</p>
+<p>系统提供了一些宏来根据子进程的退出状态获取一些进程退出时的信息：</p>
+<ul>
+<li><code>WIFEXITED(status)</code>：判断是否为正常退出状态，当正常退出是返回1，异常退出返回0。</li>
+<li><code>WEXITSTATUS(status)</code>：当子进程是正常退出时，该宏返回子进程的返回值。子进程使用<code>exit()</code>调用<code>return</code>来向父进程返回值。</li>
+</ul>
+<p><strong>调用示例：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;start fork!\n&quot;</span>);</span><br><span class="line">    <span class="keyword">int</span> pid = fork();</span><br><span class="line">    <span class="keyword">if</span> (pid &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;fork failed!\n&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="number">0</span> == pid) &#123;</span><br><span class="line">        sleep(<span class="number">2</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;this is child process\n&quot;</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">20</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">int</span> status = <span class="literal">NULL</span>;</span><br><span class="line">        <span class="keyword">int</span> child_pid = wait(&amp;status);</span><br><span class="line">        <span class="keyword">if</span> (child_pid != <span class="number">-1</span> &amp;&amp; WIFEXITED(status)) &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;this is parent process, child process pid is %d return value is %d \n&quot;</span>, child_pid, WEXITSTATUS(status) );</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里先使用<code>fork()</code>调用创建了子进程，然后通过返回值判断当前进程是父进程中还是在子进程中。在第11行代码中使用延时函数<code>sleep()</code>让子进程延时<code>2秒</code>。子进程结束后判断子进程退出状态是否为正常退出，如果正常退出就获取子进程的返回值。</p>
+<p><strong>输出结果：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">start fork!</span><br><span class="line">this is child process</span><br><span class="line">this is parent process, child process pid is 1900 return value is 20 </span><br></pre></td></tr></table></figure>
+
+
+<p>系统还提供了根据<code>PID</code>来等待指定子进程的调用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">pid_t</span> <span class="title">waitpid</span><span class="params">(<span class="keyword">pid_t</span> pid, <span class="keyword">int</span> *status, <span class="keyword">int</span> options)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>调用方式与<code>wait()</code>类似，详细的介绍可以查询相关文档。</p>
+<p>在<code>unix/linux</code>中，子进程和父进程是并行运行的，子进程什么时候退出对于父进程来说是不知道的。当一个 进程完成它的工作终止之后，它的父进程需要调用<code>wait()</code>或<code>waitpid()</code>来取得子进程的退出状态。</p>
+<ul>
+<li>孤儿进程：如果一个子进程的父进程退出后，这个子进程还在运行，那么这个子进程就会成为<code>孤儿进程</code>，<code>孤儿进程</code>将会被系统中PID为1的<code>init</code>进程接管。</li>
+<li>僵尸进程：如果一个子进程退出后它的父进程没有通过<code>wait()</code>或<code>waitpid()</code>来获取这个子进程的退出状态，那么这个子进程的<code>进程描述符</code>（进程相关信息）还会在系统中保留。这种进程称之为僵尸进程。</li>
+</ul>
+<h2 id="exec"><a href="#exec" class="headerlink" title="exec()"></a>exec()</h2><blockquote>
+<p><code>exec()</code>用来执行磁盘文件中的程序。在使用<code>fork()</code>创建一个子进程以后，此时的子进程与父进程执行的是相同的程序，我们可以在子进程中调用<code>exec()</code>把让子进程换成其他的程序。<code>exec()</code>会从需要执行的那个程序中加载代码和静态数据，并且用它们覆写自己（当前进程）的代码段和静态数据，堆栈及其他内存空间也会被重新初始化。所以也就意味着当进程调用<code>exec()</code>成功以后，原先进程后面的代码将不会执行。当调用失败时返回<code>-1</code>，并且当前进程继续执行。</p>
+<p>系统提供了一组不同版本的<code>exec()</code>调用。我拿其中<code>execvp()</code>来做演示。</p>
+</blockquote>
+<p><strong>函数原型</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">execvp</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> * __file, <span class="keyword">char</span> * <span class="keyword">const</span> * __argv)</span></span></span><br></pre></td></tr></table></figure>
+<p>第一个参数<code>__file</code>用来指定程序的路径，如果程序已经在<code>$PATH</code>环境变量中的话直接使用程序名即可，如<code>ls</code>，<code>cat</code>。</p>
+<p>第二个参数<code>__argv</code>用来给指定程序的参数。它的类型是字符串数组，一个参数占用一个数组元素。数组的第一个元素通常和<code>__file</code>参数内容一致，同时数组最后一个元素必须是<code>NULL</code>。</p>
+<p>如果程序不存在就会导致调用失败。调用失败时返回<code>-1</code>，如果调用成功是拿不到返回值的因为之前进程的内存空间已经被新的程序所覆盖。</p>
+<p><strong>调用示例：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;start fork!\n&quot;</span>);</span><br><span class="line">    <span class="keyword">int</span> pid = fork();</span><br><span class="line">    <span class="keyword">if</span> (pid &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;fork failed!\n&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="number">0</span> == pid) &#123;</span><br><span class="line">        <span class="keyword">char</span> *argv[<span class="number">3</span>];</span><br><span class="line">        argv[<span class="number">0</span>] = <span class="string">&quot;uname&quot;</span>;</span><br><span class="line">        argv[<span class="number">1</span>] = <span class="string">&quot;-a&quot;</span>;</span><br><span class="line">        argv[<span class="number">2</span>] = <span class="literal">NULL</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;call execvp()\n&quot;</span>);</span><br><span class="line">        <span class="keyword">int</span> s = execvp(argv[<span class="number">0</span>], argv);</span><br><span class="line">        <span class="keyword">if</span> (<span class="number">-1</span> == s) &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;call failed!\n&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;never execute!\n&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">         wait(<span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先<code>fork</code>一个子进程然后在子进程中通过<code>execvp()</code>来调用系统的<code>uname</code>命令获取系统信息。第16行代码对<code>execvp()</code>进行了调用，第一个参数传入程序名<code>uname</code>，第二个参数是程序需要的参数，这个参数的第一个元素是和第一个参数一样的程序名，第二个参数<code>-a</code>，同时以<code>NULL</code>结尾。然后根据返回值判断是否调用失败，只有当调用失败原来子进程的代码才会继续执行。一旦调用成功，这个子进程的代码段和相应内存空间就会被新的程序所覆盖，所以第20行代码永远不会执行。</p>
+<p><strong>输出结果：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">start fork!</span><br><span class="line">call execvp()</span><br><span class="line">Darwin codercatdeMacBook-Pro.local 19.3.0 Darwin Kernel Version 19.3.0: Thu Jan  9 20:58:23 PST 2020; root:xnu-6153.81.5~1&#x2F;RELEASE_X86_64 x86_64</span><br></pre></td></tr></table></figure>
+
+
+<p>可以使用<code>exec()</code>来实现一个<code>shell终端工具</code>，它有一个主进程用来等待用户输入，然后当用户输入一个指令时，先<code>fork()</code>一个子进程然后在子进程中调用<code>exec()</code>来执行其他应用程序。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#fork"><span class="toc-number">1.</span> <span class="toc-text">fork()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#wait"><span class="toc-number">2.</span> <span class="toc-text">wait()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#exec"><span class="toc-number">3.</span> <span class="toc-text">exec()</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2020/03/22/system-process-api/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/03/22/system-process-api/&text=系统进程API"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/03/22/system-process-api/&title=系统进程API"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/03/22/system-process-api/&is_video=false&description=系统进程API"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=系统进程API&body=Check out this article: http://coder.cat/2020/03/22/system-process-api/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/03/22/system-process-api/&title=系统进程API"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/03/22/system-process-api/&title=系统进程API"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/03/22/system-process-api/&title=系统进程API"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/03/22/system-process-api/&title=系统进程API"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/03/22/system-process-api/&name=系统进程API&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/03/22/system-process-api/&t=系统进程API"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2018-2020
+    CoderCat
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/tags/">tags</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+
+    <!-- jquery -->
+
+<script src="/lib/jquery/jquery.min.js"></script>
+
+
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+
+<!-- clipboard -->
+
+  
+<script src="/lib/clipboard/clipboard.min.js"></script>
+
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>
