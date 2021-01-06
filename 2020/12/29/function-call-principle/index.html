@@ -6,15 +6,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="description" content="这是一篇讲述函数调用原理的文章，通过大量的示意图从比较基础的概念开始阐述函数调用时堆栈的完整变化过程，同时还会通过一个具体例子来分析在X-64平台上函数的调用过程，从而理解函数调用原理。最后会提供几个例子来发现C语言函数栈帧的一些有意思的行为。 全文将带领你领略函数与栈的魅力，文章提供了gitbook的阅读方式。 目录 前置知识 内存中的栈 控制转移 数据传递 寄存器的保存与恢复 局部变量的存储">
+    <meta name="description" content="这是一篇讲述函数调用原理的文章，通过大量的示意图从比较基础的概念开始阐述函数调用时堆栈的完整变化过程，同时还会通过具体例子来分析在X-64平台上函数调用在汇编级的表示，从而深刻理解函数调用原理。最后会提供几个例子来发现C语言函数栈帧的一些有意思的行为。 全文将带领你领略函数与栈的魅力，文章提供了gitbook的阅读方式。 目录 前置知识 内存中的栈 控制转移 数据传递 寄存器的保存与恢复 局部变量">
 <meta property="og:type" content="article">
 <meta property="og:title" content="函数调用原理">
 <meta property="og:url" content="http://coder.cat/2020/12/29/function-call-principle/index.html">
 <meta property="og:site_name" content="CoderCat&#39;s Blog">
-<meta property="og:description" content="这是一篇讲述函数调用原理的文章，通过大量的示意图从比较基础的概念开始阐述函数调用时堆栈的完整变化过程，同时还会通过一个具体例子来分析在X-64平台上函数的调用过程，从而理解函数调用原理。最后会提供几个例子来发现C语言函数栈帧的一些有意思的行为。 全文将带领你领略函数与栈的魅力，文章提供了gitbook的阅读方式。 目录 前置知识 内存中的栈 控制转移 数据传递 寄存器的保存与恢复 局部变量的存储">
+<meta property="og:description" content="这是一篇讲述函数调用原理的文章，通过大量的示意图从比较基础的概念开始阐述函数调用时堆栈的完整变化过程，同时还会通过具体例子来分析在X-64平台上函数调用在汇编级的表示，从而深刻理解函数调用原理。最后会提供几个例子来发现C语言函数栈帧的一些有意思的行为。 全文将带领你领略函数与栈的魅力，文章提供了gitbook的阅读方式。 目录 前置知识 内存中的栈 控制转移 数据传递 寄存器的保存与恢复 局部变量">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2020-12-29T06:51:14.000Z">
-<meta property="article:modified_time" content="2020-12-29T09:40:02.893Z">
+<meta property="article:modified_time" content="2021-01-06T09:44:32.975Z">
 <meta property="article:author" content="CoderCat">
 <meta property="article:tag" content="Computer science">
 <meta property="article:tag" content="C">
@@ -72,13 +72,11 @@
          
           <li><a href="/">Home</a></li>
          
-          <li><a href="/about/">About</a></li>
-         
           <li><a href="/archives/">Writing</a></li>
          
-          <li><a href="/tags/">tags</a></li>
+          <li><a href="/tags/">Tags</a></li>
          
-          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Github</a></li>
         
       </ul>
     </span>
@@ -143,16 +141,13 @@
       
         <time datetime="2020-12-29T06:51:14.000Z" itemprop="datePublished">2020-12-29</time>
         
+        (Updated: <time datetime="2021-01-06T09:44:32.975Z" itemprop="dateModified">2021-01-06</time>)
+        
       
     </div>
 
 
       
-    <div class="article-category">
-        <i class="fas fa-archive"></i>
-        <a class="category-link" href="/categories/C/">C</a>
-    </div>
-
 
       
     <div class="article-tag">
@@ -166,7 +161,7 @@
   
 
   <div class="content" itemprop="articleBody">
-    <p>这是一篇讲述函数调用原理的文章，通过大量的示意图从比较基础的概念开始阐述函数调用时堆栈的完整变化过程，同时还会通过一个具体例子来分析在X-64平台上函数的调用过程，从而理解函数调用原理。最后会提供几个例子来发现C语言函数栈帧的一些有意思的行为。</p>
+    <p>这是一篇讲述函数调用原理的文章，通过大量的示意图从比较基础的概念开始阐述函数调用时堆栈的完整变化过程，同时还会通过具体例子来分析在X-64平台上函数调用在汇编级的表示，从而深刻理解函数调用原理。最后会提供几个例子来发现C语言函数栈帧的一些有意思的行为。</p>
 <p>全文将带领你领略函数与栈的魅力，文章提供了<a target="_blank" rel="noopener" href="https://gitbook.coder.cat/function-call-principle/">gitbook</a>的阅读方式。</p>
 <h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://gitbook.coder.cat/function-call-principle/content/pre-knowledge.html">前置知识</a></li>
@@ -191,14 +186,18 @@
 <li>为什么静态变量在函数返回后不会被释放</li>
 <li>什么是栈溢出攻击</li>
 </ul>
-<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>文中有一个重要的概念<code>内存对齐</code>没有提及，由于它不属于函数调用范畴之内，也就没有对它进行说明。我在构造示例时也避免了编译器为了内存对齐而出现一些额外指令，所以文中也见不到它的影子。如果你有兴趣可以通过网络去了解与它相关的内容。</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>文中有一个重要的概念<code>内存对齐</code>没有提及，它不属于函数调用范畴之内。我在构造示例时避免了编译器为了<code>内存对齐</code>而生成一些额外的指令，所以文中见不到它的影子。如果你有兴趣可以通过网络去了解与它相关的内容。</p>
 <h2 id="相关资源"><a href="#相关资源" class="headerlink" title="相关资源"></a>相关资源</h2><ul>
 <li><p>书籍：</p>
-<p>《深入理解计算机系统》（第三版）</p>
-<p>《汇编语言》（王爽第三版）</p>
+<ul>
+<li>《深入理解计算机系统》（第三版）</li>
+<li>《汇编语言》（王爽第三版）</li>
+</ul>
 </li>
 <li><p>公开课：</p>
-<p>《编程范式》（斯坦福公开课）</p>
+<ul>
+<li>《编程范式》（斯坦福公开课）</li>
+</ul>
 </li>
 </ul>
 <h2 id="绘图工具"><a href="#绘图工具" class="headerlink" title="绘图工具"></a>绘图工具</h2><p>文中所有图片都使用了<a target="_blank" rel="noopener" href="https://excalidraw.com/">excalidraw</a>作为绘图工具，这是一款非常棒的在线绘图工具，它提供了不同风格的绘制模式。</p>
@@ -217,13 +216,11 @@
          
           <li><a href="/">Home</a></li>
          
-          <li><a href="/about/">About</a></li>
-         
           <li><a href="/archives/">Writing</a></li>
          
-          <li><a href="/tags/">tags</a></li>
+          <li><a href="/tags/">Tags</a></li>
          
-          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Github</a></li>
         
       </ul>
     </div>
@@ -265,7 +262,7 @@
     Copyright &copy;
     
     
-    2018-2020
+    2018-2021
     CoderCat
   </div>
   <div class="footer-right">
@@ -274,13 +271,11 @@
          
           <li><a href="/">Home</a></li>
          
-          <li><a href="/about/">About</a></li>
-         
           <li><a href="/archives/">Writing</a></li>
          
-          <li><a href="/tags/">tags</a></li>
+          <li><a href="/tags/">Tags</a></li>
          
-          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Projects</a></li>
+          <li><a target="_blank" rel="noopener" href="https://github.com/acodercat">Github</a></li>
         
       </ul>
     </nav>
