@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <meta name="description" content="当一个函数在运行时，需要为它在堆栈中创建一个栈帧（stack frame）用来记录运行时产生的相关信息，因此每个函数在执行前都会创建一个栈帧，在它返回时会销毁该栈帧。  本节的示意图我们通过颜色区分调用者与被调用者的栈帧，蓝色表示被调用者，绿色表示调用者。 创建栈帧通常用一个叫做栈基址（bp）的寄存器来保存正在运行函数栈帧的开始地址，由于栈指针（sp）始终保存的是栈顶的地址，所以栈指针保存的也就">
 <meta property="og:type" content="article">
-<meta property="og:title" content="函数栈帧">
+<meta property="og:title" content="函数栈帧的创建与销毁">
 <meta property="og:url" content="http://coder.cat/2020/08/19/function-stack-frame/index.html">
 <meta property="og:site_name" content="CoderCat&#39;s Blog">
 <meta property="og:description" content="当一个函数在运行时，需要为它在堆栈中创建一个栈帧（stack frame）用来记录运行时产生的相关信息，因此每个函数在执行前都会创建一个栈帧，在它返回时会销毁该栈帧。  本节的示意图我们通过颜色区分调用者与被调用者的栈帧，蓝色表示被调用者，绿色表示调用者。 创建栈帧通常用一个叫做栈基址（bp）的寄存器来保存正在运行函数栈帧的开始地址，由于栈指针（sp）始终保存的是栈顶的地址，所以栈指针保存的也就">
@@ -21,7 +21,7 @@
 <meta property="og:image" content="https://image.coder.cat/stack7.png">
 <meta property="og:image" content="https://image.coder.cat/stack6.png">
 <meta property="article:published_time" content="2020-08-19T07:03:43.000Z">
-<meta property="article:modified_time" content="2021-01-06T09:44:34.919Z">
+<meta property="article:modified_time" content="2021-01-07T03:00:41.916Z">
 <meta property="article:author" content="CoderCat">
 <meta property="article:tag" content="Computer science">
 <meta property="article:tag" content="C">
@@ -46,7 +46,7 @@
       
     
     <!-- title -->
-    <title>函数栈帧</title>
+    <title>函数栈帧的创建与销毁</title>
     <!-- styles -->
     
 <link rel="stylesheet" href="/css/style.css">
@@ -109,16 +109,16 @@
     <div id="share" style="display: none">
       <ul>
   <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2020/08/19/function-stack-frame/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/08/19/function-stack-frame/&text=函数栈帧"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/08/19/function-stack-frame/&is_video=false&description=函数栈帧"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=函数栈帧&body=Check out this article: http://coder.cat/2020/08/19/function-stack-frame/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/08/19/function-stack-frame/&name=函数栈帧&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/08/19/function-stack-frame/&t=函数栈帧"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/08/19/function-stack-frame/&text=函数栈帧的创建与销毁"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧的创建与销毁"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/08/19/function-stack-frame/&is_video=false&description=函数栈帧的创建与销毁"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=函数栈帧的创建与销毁&body=Check out this article: http://coder.cat/2020/08/19/function-stack-frame/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧的创建与销毁"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧的创建与销毁"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧的创建与销毁"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧的创建与销毁"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/08/19/function-stack-frame/&name=函数栈帧的创建与销毁&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/08/19/function-stack-frame/&t=函数栈帧的创建与销毁"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -135,7 +135,7 @@
   <header>
     
     <h1 class="posttitle" itemprop="name headline">
-        函数栈帧
+        函数栈帧的创建与销毁
     </h1>
 
 
@@ -149,7 +149,7 @@
       
         <time datetime="2020-08-19T07:03:43.000Z" itemprop="datePublished">2020-08-19</time>
         
-        (Updated: <time datetime="2021-01-06T09:44:34.919Z" itemprop="dateModified">2021-01-06</time>)
+        (Updated: <time datetime="2021-01-07T03:00:41.916Z" itemprop="dateModified">2021-01-07</time>)
         
       
     </div>
@@ -245,16 +245,16 @@
     <div id="share-footer" style="display: none">
       <ul>
   <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2020/08/19/function-stack-frame/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/08/19/function-stack-frame/&text=函数栈帧"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/08/19/function-stack-frame/&is_video=false&description=函数栈帧"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=函数栈帧&body=Check out this article: http://coder.cat/2020/08/19/function-stack-frame/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/08/19/function-stack-frame/&name=函数栈帧&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/08/19/function-stack-frame/&t=函数栈帧"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/08/19/function-stack-frame/&text=函数栈帧的创建与销毁"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧的创建与销毁"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/08/19/function-stack-frame/&is_video=false&description=函数栈帧的创建与销毁"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=函数栈帧的创建与销毁&body=Check out this article: http://coder.cat/2020/08/19/function-stack-frame/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧的创建与销毁"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧的创建与销毁"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧的创建与销毁"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/08/19/function-stack-frame/&title=函数栈帧的创建与销毁"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/08/19/function-stack-frame/&name=函数栈帧的创建与销毁&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/08/19/function-stack-frame/&t=函数栈帧的创建与销毁"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>

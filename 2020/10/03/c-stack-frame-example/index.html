@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <meta name="description" content="我们通过把一段具有函数调用的C语言代码编译成汇编，逐步分析函数栈帧生命周期的完整变化过程。  有如下C语言代码： 12345678910long callee(long arg1, long arg2, long arg3, long arg4, long arg5, long arg6, long arg7, long arg8) &amp;#123;    return arg7 + arg8;&amp;#">
 <meta property="og:type" content="article">
-<meta property="og:title" content="分析一个C语言函数栈帧实例">
+<meta property="og:title" content="利用汇编分析C语言函数栈帧">
 <meta property="og:url" content="http://coder.cat/2020/10/03/c-stack-frame-example/index.html">
 <meta property="og:site_name" content="CoderCat&#39;s Blog">
 <meta property="og:description" content="我们通过把一段具有函数调用的C语言代码编译成汇编，逐步分析函数栈帧生命周期的完整变化过程。  有如下C语言代码： 12345678910long callee(long arg1, long arg2, long arg3, long arg4, long arg5, long arg6, long arg7, long arg8) &amp;#123;    return arg7 + arg8;&amp;#">
@@ -21,7 +21,7 @@
 <meta property="og:image" content="https://image.coder.cat/stack27.png">
 <meta property="og:image" content="https://image.coder.cat/stack28.png">
 <meta property="article:published_time" content="2020-10-03T03:06:27.000Z">
-<meta property="article:modified_time" content="2021-01-06T09:44:30.971Z">
+<meta property="article:modified_time" content="2021-01-07T02:59:11.240Z">
 <meta property="article:author" content="CoderCat">
 <meta property="article:tag" content="Computer science">
 <meta property="article:tag" content="C">
@@ -46,7 +46,7 @@
       
     
     <!-- title -->
-    <title>分析一个C语言函数栈帧实例</title>
+    <title>利用汇编分析C语言函数栈帧</title>
     <!-- styles -->
     
 <link rel="stylesheet" href="/css/style.css">
@@ -92,7 +92,7 @@
     <span id="actions">
       <ul>
         
-        <li><a class="icon" href="/2020/12/29/function-call-principle/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        <li><a class="icon" href="/2020/12/21/SICP-notes-1-1/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
         <li><a class="icon" href="/2020/09/19/representation-of-integers-in-computers/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
@@ -109,16 +109,16 @@
     <div id="share" style="display: none">
       <ul>
   <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2020/10/03/c-stack-frame-example/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/10/03/c-stack-frame-example/&text=分析一个C语言函数栈帧实例"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/10/03/c-stack-frame-example/&is_video=false&description=分析一个C语言函数栈帧实例"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=分析一个C语言函数栈帧实例&body=Check out this article: http://coder.cat/2020/10/03/c-stack-frame-example/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/10/03/c-stack-frame-example/&name=分析一个C语言函数栈帧实例&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/10/03/c-stack-frame-example/&t=分析一个C语言函数栈帧实例"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/10/03/c-stack-frame-example/&text=利用汇编分析C语言函数栈帧"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=利用汇编分析C语言函数栈帧"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/10/03/c-stack-frame-example/&is_video=false&description=利用汇编分析C语言函数栈帧"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=利用汇编分析C语言函数栈帧&body=Check out this article: http://coder.cat/2020/10/03/c-stack-frame-example/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=利用汇编分析C语言函数栈帧"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=利用汇编分析C语言函数栈帧"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=利用汇编分析C语言函数栈帧"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=利用汇编分析C语言函数栈帧"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/10/03/c-stack-frame-example/&name=利用汇编分析C语言函数栈帧&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/10/03/c-stack-frame-example/&t=利用汇编分析C语言函数栈帧"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -135,7 +135,7 @@
   <header>
     
     <h1 class="posttitle" itemprop="name headline">
-        分析一个C语言函数栈帧实例
+        利用汇编分析C语言函数栈帧
     </h1>
 
 
@@ -149,7 +149,7 @@
       
         <time datetime="2020-10-03T03:06:27.000Z" itemprop="datePublished">2020-10-03</time>
         
-        (Updated: <time datetime="2021-01-06T09:44:30.971Z" itemprop="dateModified">2021-01-06</time>)
+        (Updated: <time datetime="2021-01-07T02:59:11.240Z" itemprop="dateModified">2021-01-07</time>)
         
       
     </div>
@@ -261,16 +261,16 @@
     <div id="share-footer" style="display: none">
       <ul>
   <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2020/10/03/c-stack-frame-example/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/10/03/c-stack-frame-example/&text=分析一个C语言函数栈帧实例"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/10/03/c-stack-frame-example/&is_video=false&description=分析一个C语言函数栈帧实例"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=分析一个C语言函数栈帧实例&body=Check out this article: http://coder.cat/2020/10/03/c-stack-frame-example/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=分析一个C语言函数栈帧实例"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/10/03/c-stack-frame-example/&name=分析一个C语言函数栈帧实例&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/10/03/c-stack-frame-example/&t=分析一个C语言函数栈帧实例"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/10/03/c-stack-frame-example/&text=利用汇编分析C语言函数栈帧"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=利用汇编分析C语言函数栈帧"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/10/03/c-stack-frame-example/&is_video=false&description=利用汇编分析C语言函数栈帧"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=利用汇编分析C语言函数栈帧&body=Check out this article: http://coder.cat/2020/10/03/c-stack-frame-example/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=利用汇编分析C语言函数栈帧"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=利用汇编分析C语言函数栈帧"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=利用汇编分析C语言函数栈帧"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/10/03/c-stack-frame-example/&title=利用汇编分析C语言函数栈帧"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/10/03/c-stack-frame-example/&name=利用汇编分析C语言函数栈帧&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/10/03/c-stack-frame-example/&t=利用汇编分析C语言函数栈帧"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>

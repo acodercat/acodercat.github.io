@@ -8,13 +8,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <meta name="description" content="这是一篇讲述函数调用原理的文章，通过大量的示意图从比较基础的概念开始阐述函数调用时堆栈的完整变化过程，同时还会通过具体例子来分析在X-64平台上函数调用在汇编级的表示，从而深刻理解函数调用原理。最后会提供几个例子来发现C语言函数栈帧的一些有意思的行为。 全文将带领你领略函数与栈的魅力，文章提供了gitbook的阅读方式。 目录 前置知识 内存中的栈 控制转移 数据传递 寄存器的保存与恢复 局部变量">
 <meta property="og:type" content="article">
-<meta property="og:title" content="函数调用原理">
+<meta property="og:title" content="深入理解函数调用原理">
 <meta property="og:url" content="http://coder.cat/2020/12/29/function-call-principle/index.html">
 <meta property="og:site_name" content="CoderCat&#39;s Blog">
 <meta property="og:description" content="这是一篇讲述函数调用原理的文章，通过大量的示意图从比较基础的概念开始阐述函数调用时堆栈的完整变化过程，同时还会通过具体例子来分析在X-64平台上函数调用在汇编级的表示，从而深刻理解函数调用原理。最后会提供几个例子来发现C语言函数栈帧的一些有意思的行为。 全文将带领你领略函数与栈的魅力，文章提供了gitbook的阅读方式。 目录 前置知识 内存中的栈 控制转移 数据传递 寄存器的保存与恢复 局部变量">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2020-12-29T06:51:14.000Z">
-<meta property="article:modified_time" content="2021-01-06T09:44:32.975Z">
+<meta property="article:modified_time" content="2021-01-07T02:54:59.073Z">
 <meta property="article:author" content="CoderCat">
 <meta property="article:tag" content="Computer science">
 <meta property="article:tag" content="C">
@@ -38,7 +38,7 @@
       
     
     <!-- title -->
-    <title>函数调用原理</title>
+    <title>深入理解函数调用原理</title>
     <!-- styles -->
     
 <link rel="stylesheet" href="/css/style.css">
@@ -87,7 +87,7 @@
         <li><a class="icon" href="/2020/12/29/an-interesting-example-in-c/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
-        <li><a class="icon" href="/2020/10/03/c-stack-frame-example/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        <li><a class="icon" href="/2020/12/21/SICP-notes-1-1/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
         
         <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
         <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
@@ -101,16 +101,16 @@
     <div id="share" style="display: none">
       <ul>
   <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2020/12/29/function-call-principle/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/12/29/function-call-principle/&text=函数调用原理"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/12/29/function-call-principle/&title=函数调用原理"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/12/29/function-call-principle/&is_video=false&description=函数调用原理"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=函数调用原理&body=Check out this article: http://coder.cat/2020/12/29/function-call-principle/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/12/29/function-call-principle/&title=函数调用原理"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/12/29/function-call-principle/&title=函数调用原理"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/12/29/function-call-principle/&title=函数调用原理"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/12/29/function-call-principle/&title=函数调用原理"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/12/29/function-call-principle/&name=函数调用原理&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/12/29/function-call-principle/&t=函数调用原理"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/12/29/function-call-principle/&text=深入理解函数调用原理"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/12/29/function-call-principle/&title=深入理解函数调用原理"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/12/29/function-call-principle/&is_video=false&description=深入理解函数调用原理"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=深入理解函数调用原理&body=Check out this article: http://coder.cat/2020/12/29/function-call-principle/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/12/29/function-call-principle/&title=深入理解函数调用原理"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/12/29/function-call-principle/&title=深入理解函数调用原理"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/12/29/function-call-principle/&title=深入理解函数调用原理"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/12/29/function-call-principle/&title=深入理解函数调用原理"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/12/29/function-call-principle/&name=深入理解函数调用原理&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/12/29/function-call-principle/&t=深入理解函数调用原理"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -127,7 +127,7 @@
   <header>
     
     <h1 class="posttitle" itemprop="name headline">
-        函数调用原理
+        深入理解函数调用原理
     </h1>
 
 
@@ -141,7 +141,7 @@
       
         <time datetime="2020-12-29T06:51:14.000Z" itemprop="datePublished">2020-12-29</time>
         
-        (Updated: <time datetime="2021-01-06T09:44:32.975Z" itemprop="dateModified">2021-01-06</time>)
+        (Updated: <time datetime="2021-01-07T02:54:59.073Z" itemprop="dateModified">2021-01-07</time>)
         
       
     </div>
@@ -232,16 +232,16 @@
     <div id="share-footer" style="display: none">
       <ul>
   <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://coder.cat/2020/12/29/function-call-principle/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/12/29/function-call-principle/&text=函数调用原理"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/12/29/function-call-principle/&title=函数调用原理"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/12/29/function-call-principle/&is_video=false&description=函数调用原理"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=函数调用原理&body=Check out this article: http://coder.cat/2020/12/29/function-call-principle/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/12/29/function-call-principle/&title=函数调用原理"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/12/29/function-call-principle/&title=函数调用原理"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/12/29/function-call-principle/&title=函数调用原理"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/12/29/function-call-principle/&title=函数调用原理"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/12/29/function-call-principle/&name=函数调用原理&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/12/29/function-call-principle/&t=函数调用原理"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://coder.cat/2020/12/29/function-call-principle/&text=深入理解函数调用原理"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://coder.cat/2020/12/29/function-call-principle/&title=深入理解函数调用原理"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://coder.cat/2020/12/29/function-call-principle/&is_video=false&description=深入理解函数调用原理"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=深入理解函数调用原理&body=Check out this article: http://coder.cat/2020/12/29/function-call-principle/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://coder.cat/2020/12/29/function-call-principle/&title=深入理解函数调用原理"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://coder.cat/2020/12/29/function-call-principle/&title=深入理解函数调用原理"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://coder.cat/2020/12/29/function-call-principle/&title=深入理解函数调用原理"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://coder.cat/2020/12/29/function-call-principle/&title=深入理解函数调用原理"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://coder.cat/2020/12/29/function-call-principle/&name=深入理解函数调用原理&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://coder.cat/2020/12/29/function-call-principle/&t=深入理解函数调用原理"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
